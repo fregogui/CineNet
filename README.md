@@ -1,4 +1,4 @@
-h1. Projet CineNet :
+<h1>Projet CineNet :</h1>
 
 * Diagramme en réseau : 
 ** un noeud = un nomié oscare 2018,
