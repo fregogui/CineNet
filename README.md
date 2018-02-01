@@ -1,14 +1,25 @@
-<h1>Projet CineNet :</h1>
+# CineNet Project
+
+The goal of this project is to show the relations between the nominees of the Oscare 2018. Using a network graph we want to illustrate the abundance of interaction between this sample of people.
+
+## What will it look like ?
+
+Our DataViz will be structured using the following key points :
 
 <ul>
-  <li> Diagramme en réseau : </li>
+  <li> One Network Map : </li>
   <ul>
-    <li>un noeud = un nomié oscare 2018</li>
-    <li>un lien = une collaboration sur un film (période 2015-2018)</li>
+    <li>One node = One nominee 2018</li>
+    <li>One link = One collaboration on one movie (period to be defined)</li>
   </ul>
-  <li> Taille rayon noeud : proportionnel à la recette sur la période d'étude</li>
-  <li> Couleur noeud : fonction du poste occupé par la personne</li>
-  <li> Selection des personnes : par checkbox (regroupé en nomination)</li>
-<li>Tooltip sur acteur : laisse uniquement les liens qui le concerne et affiche liste des filmes</li>
-  <li>Data : <a href="https://developers.themoviedb.org/3/movies/get-movie-credits">https://developers.themoviedb.org/3/movies/get-movie-credits</a></li>
+  <li> Node length : proportional to the cumulate audience</li>
+  <li> Node color : depend of the job of the nominee</li>
+  <li> Nominee selection : using checkbox (grouped by category)</li>
 </ul>
+
+## Source of Data ?
+
+Using : api.themoviedb.org
+[More details](https://github.com/fregogui/CineNet/blob/master/DATA.MD)
+
+ 
