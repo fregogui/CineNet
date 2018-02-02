@@ -13,7 +13,7 @@ In the first steps of our project, we had these ideas to represent links bitween
 <table border="0">
   <tr>
     <td>
-      <img src="img/brainstorming.jpg" style="width: 100px;">
+      <img src="img/Brainstorming.jpg" style="width: 100px;">
     </td>
   </tr>
   <tr>
