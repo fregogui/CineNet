@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <script src="node_modules/d3/build/d3.js"></script>
+  <style>
+    body { margin:0;position:fixed;top:0;right:0;bottom:0;left:0; }
+      .hidden {
+        display: none;
+    }
+    div.tooltip {
+        color: #222;
+        background-color: #fff;
+        padding: .5em;
+        text-shadow: #f5f5f5 0 1px 0;
+        border-radius: 2px;
+        opacity: 0.9;
+        position: absolute;}
+  </style>
+</head>
+
+<body>
+  <script>
+   	var width = 700,
+  		  height = 580;
+
+		var svg = d3.select( "body" )
+  		.append( "svg" )
+		  .attr( "width", width )
+		  .attr( "height", height );
+
+
+
+
+		d3.json("../collect-data/data/database.json", function(json) {
+
+    var network=format_to_network(json);
+    console.log(network);
+    
+      function format_to_network(data){
+        n=data.length;
+
+        network={"nodes":[],"links":[]}
+        for (var i=0;i<n;i++){
+          actor={};
+          actor.name=data[i].name;
+          actor.id=data[i].id;
+          network.nodes.push(actor);
+          crew_i=data[i].credits.crew;
+          movies_i=[];
+            for (var j=i+1;j<n;j++){
+            movies_j=[];
+            crew_j= data[j].credits.crew;
+
+              for (var l=0;l<crew_i.length;l++){
+
+                for (var m=0;m<crew_j.length;m++){
+
+                  if (movies_i.includes(crew_i[l].id)==false && movies_j.includes(crew_j[m].id)==false && crew_i[l].id===crew_j[m].id){
+                    link={};
+                    movies_i.push(crew_i[l].id);
+                    movies_j.push(crew_j[m].id);
+                    link.source=data[i].id;
+                    link.target=data[j].id;
+                    link.movie=crew_i[l].original_title;
+                    link.movie_id=crew_i[l].id;
+                    network.links.push(link);
+                  }
+                }
+              }
+
+          }
+          }
+          return network;
+      }
+
+   });
+
+  </script>
+</body>
