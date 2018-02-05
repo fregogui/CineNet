@@ -22,4 +22,25 @@ Our DataViz will be structured using the following key points :
 [api.themoviedb.org](api.themoviedb.org)
 [More details](https://github.com/fregogui/CineNet/blob/master/DATA.MD)
 
+## How to use it ?
+
+### Collecting data
+
+Download [node.js](https://nodejs.org/).
+
+Then,
+
+```
+cd collect-data
+cp config.secrets.sample.json config.secrets.json
+```
+
+Open the `config.secrets.json` file and put your `api_key` from [api.themoviedb.org](api.themoviedb.org) in the correct field.
+Then, 
+
+```
+npm install
+npm start
+```
+
  
