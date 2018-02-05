@@ -1,0 +1,22 @@
+{
+  "name": "parse_tmdb",
+  "version": "2.2.4",
+  "description": "",
+  "main": "",
+  "scripts": {
+    "start": "node collectData.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fregogui/CineNet"
+  },
+  "author": "Antonio De Jesus Montez <antoniodjm22@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^2.6.0",
+    "mkdirp": "^0.5.1",
+    "superagent": "^3.8.2",
+    "winston": "^2.4.0"
+  },
+  "devDependencies": {}
+}
