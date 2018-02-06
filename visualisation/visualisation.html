@@ -20,60 +20,151 @@
 
 <body>
   <script>
-   	var width = 700,
-  		  height = 580;
+   	var width = 2000,
+  		  height = 1000;
+
+
 
 		var svg = d3.select( "body" )
   		.append( "svg" )
 		  .attr( "width", width )
 		  .attr( "height", height );
 
-
+      var simulation = d3.forceSimulation()
+          .force("link", d3.forceLink().id(function(d) { return d.id; }))
+          .force("charge", d3.forceManyBody().strength(-3))
+          .force("center", d3.forceCenter(width / 4, height / 4));
 
 
 		d3.json("../collect-data/data/database.json", function(json) {
 
     var network=format_to_network(json);
-    console.log(network);
-    
-      function format_to_network(data){
-        n=data.length;
+    var alones=is_alone(network);
 
-        network={"nodes":[],"links":[]}
-        for (var i=0;i<n;i++){
-          actor={};
-          actor.name=data[i].name;
-          actor.id=data[i].id;
-          network.nodes.push(actor);
-          crew_i=data[i].credits.crew;
-          movies_i=[];
-            for (var j=i+1;j<n;j++){
-            movies_j=[];
-            crew_j= data[j].credits.crew;
 
-              for (var l=0;l<crew_i.length;l++){
+    network.links.forEach(function(d){
+      d.source = d.source_id;
+      d.target = d.target_id;
+    });
 
-                for (var m=0;m<crew_j.length;m++){
+    var link = svg.append("g")
+                    .style("stroke", "#aaa")
+                    .selectAll("line")
+                    .data(network.links)
+                    .enter().append("line");
 
-                  if (movies_i.includes(crew_i[l].id)==false && movies_j.includes(crew_j[m].id)==false && crew_i[l].id===crew_j[m].id){
-                    link={};
-                    movies_i.push(crew_i[l].id);
-                    movies_j.push(crew_j[m].id);
-                    link.source=data[i].id;
-                    link.target=data[j].id;
-                    link.movie=crew_i[l].original_title;
-                    link.movie_id=crew_i[l].id;
-                    network.links.push(link);
-                  }
-                }
-              }
+      var node = svg.append("g")
+                .attr("class", "nodes")
+      .selectAll("circle")
+                .data(network.nodes)
+      .enter().append("circle")
+              .attr("r", 6)
+              .call(d3.drag()
+                  .on("start", dragstarted)
+                  .on("drag", dragged)
+                  .on("end", dragended));
 
-          }
-          }
-          return network;
+      simulation
+      .nodes(network.nodes)
+      .on("tick", ticked);
+
+  simulation.force("link")
+      .links(network.links);
+
+
+      function ticked() {
+       link
+           .attr("x1", function(d) { return d.source.x; })
+           .attr("y1", function(d) { return d.source.y; })
+           .attr("x2", function(d) { return d.target.x; })
+           .attr("y2", function(d) { return d.target.y; });
+
+       node
+            .attr("r", 5)
+            .style("fill", "#d9d9d9")
+            .style("stroke", "#969696")
+            .style("stroke-width", "1px")
+            .attr("cx", function (d) { return d.x+6; })
+            .attr("cy", function(d) { return d.y-6; });
+
+
       }
 
    });
+
+
+
+
+function dragstarted(d) {
+  if (!d3.event.active) simulation.alphaTarget(0.3).restart()
+  simulation.fix(d);
+}
+
+function dragged(d) {
+  simulation.fix(d, d3.event.x, d3.event.y);
+}
+
+function dragended(d) {
+  if (!d3.event.active) simulation.alphaTarget(0);
+  simulation.unfix(d);
+}
+
+
+
+function is_alone(data){
+  var output=[];
+
+  for (var i=0;i<data.nodes.length;i++){
+    c=1;
+    for (var j=0;j<data.links.length;j++){
+      if (data.nodes[i].id==data.links[j].source_id || data.nodes[i].id==data.links[j].target_id ){
+        c=0;
+      }
+
+    }
+    if (c==1){
+      output.push(data.nodes[i]);
+    }
+  }
+  return output;
+}
+
+
+function format_to_network(data){
+  n=data.length;
+
+  network={"nodes":[],"links":[]}
+  for (var i=0;i<n;i++){
+    actor={};
+    actor.name=data[i].name;
+    actor.id=data[i].id;
+    network.nodes.push(actor);
+    crew_i=data[i].credits.crew;
+    movies_i=[];
+      for (var j=i+1;j<n;j++){
+      movies_j=[];
+      crew_j= data[j].credits.crew;
+        for (var l=0;l<crew_i.length;l++){
+          for (var m=0;m<crew_j.length;m++){
+            if (movies_i.includes(crew_i[l].id)==false && movies_j.includes(crew_j[m].id)==false && crew_i[l].id===crew_j[m].id){
+              link={};
+              movies_i.push(crew_i[l].id);
+              movies_j.push(crew_j[m].id);
+              link.source_id=data[i].id;
+              link.target_id=data[j].id;
+              link.movie=crew_i[l].original_title;
+              link.movie_id=crew_i[l].id;
+              network.links.push(link);
+            }
+          }
+        }
+
+    }
+    }
+    return network;
+}
+
+
 
   </script>
 </body>
