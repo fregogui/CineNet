@@ -34,10 +34,10 @@ const logger = (type) => {
   let winston = new (winstonLib.Logger)({
     levels: winstonLib.config.syslog.levels,
     transports: [
-      /* new (winstonLib.transports.Console)({
+      new (winstonLib.transports.Console)({
       timestamp: tsFormat,
       colorize: true
-      }), */
+      }),
       new (winstonLib.transports.File)({
         filename: __dirname + `/../logs/${type}-` + timestamp + '.log',
         timestamp: tsFormat,

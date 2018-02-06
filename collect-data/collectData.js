@@ -26,6 +26,9 @@ fs.readFile('./data/nominees.txt', 'latin1', (err, data) => {
 
 	async.eachSeries(lines, (line, callback) => {
 	  setTimeout( () => {
+
+			if (line.length === 0) return callback();
+
 	    //Get info from line
 			let lineInfo = line.split('|');
 			let nominees = lineInfo[0].split(',');
@@ -33,6 +36,8 @@ fs.readFile('./data/nominees.txt', 'latin1', (err, data) => {
 			let award = lineInfo[2].replace('\r','');
 
 			async.eachSeries(nominees, (nominee, asyncIterator) => {
+
+				logger('info', `Processing ${nominee}...`)
 
 				let request = {
 					api_key: config.tmdb.api_key,
@@ -75,12 +80,12 @@ fs.readFile('./data/nominees.txt', 'latin1', (err, data) => {
 
 								movie_credits.cast = movies.cast.filter( movie => {
 									let date = new Date(movie.release_date);
-									return Number(date.getUTCFullYear()) + 5 >= 2018 && Number(date.getUTCFullYear()) < 2018 && !(movie.character.indexOf('Himself') !== -1 || movie.character.length !== '');
+									return (Number(date.getUTCFullYear()) + 5 >= 2017 && Number(date.getUTCFullYear()) < 2018) && typeof movie.character !== 'undefined' && movie.character.indexOf('Himself') === -1;
 								});
 
 								movie_credits.crew = movies.crew.filter( movie => {
 									let date = new Date(movie.release_date);
-									return Number(date.getUTCFullYear()) + 5 >= 2018 && Number(date.getUTCFullYear()) < 2018;
+									return Number(date.getUTCFullYear()) + 5 >= 2017 && Number(date.getUTCFullYear()) < 2018 && typeof movie.job !== 'undefined' && movie.job.indexOf('Thanks') === -1;
 								});
 
 								let nomination = {
