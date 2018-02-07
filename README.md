@@ -35,7 +35,7 @@ cd collect-data
 cp config.secrets.sample.json config.secrets.json
 ```
 
-Open the `config.secrets.json` file and put your `api_key` from [api.themoviedb.org](api.themoviedb.org) in the correct field.
+Open the `config.secrets.json` file and put your `api_key` from [The Movie Database](https://www.themoviedb.org/) in the correct field.
 Then, 
 
 ```
