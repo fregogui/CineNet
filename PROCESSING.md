@@ -10,10 +10,10 @@ Nous devons trier nos données aux travers de noeuds et de liens. Pour rappel, u
 ```json
 {
   "nodes": [
-    {"id": "id_node"},...  
+    {"id": "id_node"},
   ],
   "links": [
-    {"source": "id_node", "target": "id_node", "id"="id_link"}, ...
+    {"source": "id_node", "target": "id_node", "id":"id_link"},
   ]
 }
 ```
