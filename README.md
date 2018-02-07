@@ -19,7 +19,7 @@ Our DataViz will be structured using the following key points :
 
 ## Source of Data ?
 
-[api.themoviedb.org](api.themoviedb.org)
+[api.themoviedb.org](https://www.themoviedb.org/)
 [More details](https://github.com/fregogui/CineNet/blob/master/DATA.MD)
 
 ## How to use it ?
@@ -35,7 +35,7 @@ cd collect-data
 cp config.secrets.sample.json config.secrets.json
 ```
 
-Open the `config.secrets.json` file and put your `api_key` from [api.themoviedb.org](api.themoviedb.org) in the correct field.
+Open the `config.secrets.json` file and put your `api_key` from [The Movie Database](https://www.themoviedb.org/) in the correct field.
 Then, 
 
 ```
