@@ -19,7 +19,7 @@ Our DataViz will be structured using the following key points :
 
 ## Source of Data ?
 
-[api.themoviedb.org](api.themoviedb.org)
+[api.themoviedb.org](https://www.themoviedb.org/)
 [More details](https://github.com/fregogui/CineNet/blob/master/DATA.MD)
 
 ## How to use it ?
