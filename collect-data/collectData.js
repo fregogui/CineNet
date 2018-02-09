@@ -2,15 +2,15 @@
 const config = require('./config.secrets.json');
 
 /*
-  Getting the libraries we need
+Getting the libraries we need
 */
 const superagent = require('superagent'); //to make requests
 const async = require('async'); //to make async operations
 const fs = require('fs');
-const logger = require('./utils/logger')('tmdb');
+const logger = require('../utils/logger')('tmdb');
 
 /*
-  Beginning of the script
+Beginning of the script
 */
 
 let people = [];
@@ -23,21 +23,23 @@ fs.readFile('./data/nominees.txt', 'latin1', (err, data) => {
 	}
 
 	let lines = data.split('\n');
+	let lines_number = lines.length;
 
-	async.eachSeries(lines, (line, callback) => {
-	  setTimeout( () => {
+	async.eachOfSeries(lines, (line, key, callback) => {
 
-			if (line.length === 0) return callback();
+		logger('info', `${key + 1}/${lines_number}`);
 
-	    //Get info from line
-			let lineInfo = line.split('|');
-			let nominees = lineInfo[0].split(',');
-			let movie = lineInfo[1];
-			let award = lineInfo[2].replace('\r','');
+		if (line.length === 0) return callback();
 
-			async.eachSeries(nominees, (nominee, asyncIterator) => {
+		//Get info from line
+		let lineInfo = line.split('|');
+		let nominees = lineInfo[0].split(',');
+		let movie = lineInfo[1];
+		let award = lineInfo[2].replace('\r','');
 
-				logger('info', `Processing ${nominee}...`)
+		async.eachSeries(nominees, (nominee, asyncIterator) => {
+
+			setTimeout( () => {
 
 				let request = {
 					api_key: config.tmdb.api_key,
@@ -106,28 +108,28 @@ fs.readFile('./data/nominees.txt', 'latin1', (err, data) => {
 						});
 					}
 				});
-			}, err => {
-				if (err) return callback(err);
-				callback();
-			});
-	  }, 100);
+			}, 500);
+		}, err => {
+			if (err) return callback(err);
+			callback();
+		});
 	}, err => {
-	  // if any of the file processing produced an error, err would equal that error
-	  if (err) {
-	    // One of the iterations produced an error.
-	    // All processing will now stop.
-	    logger('warning', `${err}`);
-	    logger('notice', `A nominee has a problem`);
-	  } else {
-	    logger('info', `All nominees have been processed successfully`);
+		// if any of the file processing produced an error, err would equal that error
+		if (err) {
+			// One of the iterations produced an error.
+			// All processing will now stop.
+			logger('warning', `${err}`);
+			logger('notice', `A nominee has a problem`);
+		} else {
+			logger('info', `All nominees have been processed successfully`);
 			fs.writeFile('./data/database.json', JSON.stringify(people, null, "\t"), err => {
 				if (err) {
 					logger('warning', `${err.message}`);
-			    logger('notice', `Error while writing into database.json`);
+					logger('notice', `Error while writing into database.json`);
 					return;
 				}
 				logger('info', 'The file has been saved!');
 			});
-	  }
+		}
 	});
-})
+});

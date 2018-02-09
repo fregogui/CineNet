@@ -14,9 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "async": "^2.6.0",
-    "mkdirp": "^0.5.1",
-    "superagent": "^3.8.2",
-    "winston": "^2.4.0"
+    "superagent": "^3.8.2"
   },
   "devDependencies": {}
 }
