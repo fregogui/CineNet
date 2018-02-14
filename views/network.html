@@ -11,10 +11,10 @@
     pointer-events: none;
     position: absolute;
     text-align: left;
-    padding: 8px;
+    padding: 5px;
     font: 12px roboto;
 
-    background: #039BE5;
+    background: #566573  ;
     border: 1px;
     border-radius: 5px;
     color: #ECEFF1;
@@ -25,12 +25,13 @@
 <body>
   <script>
   var width = 2000,
-  height = 1000;
+  height = 1200;
+
 
   var svg = d3.select( "body" )
   .append( "svg" )
-  .attr( "width", width )
-  .attr( "height", height );
+  .attr("viewBox", "-1000 -600 2000 1200");
+
 
   // add the tooltip area to the webpage
   let tooltip = d3.select("body").append("div")
@@ -42,10 +43,26 @@
 
     var network=format_to_network(json);
 
+/*
+//repartition éclatee
     var simulation = d3.forceSimulation()
-    .force("link", d3.forceLink().id(function(d) { return d.id; }))
-    .force("charge", d3.forceManyBody(-20))
-    .force("center", d3.forceCenter(width / 4, height / 4));
+    .force("link", d3.forceLink().id(function(d) {return d.id; }).strength(function(d,i){return 0.01;}))
+    .force("charge", d3.forceManyBody(20))
+    .force("charge", d3.forceCollide().radius(10))
+    .force("r", d3.forceRadial(function(d,i)  {return (i%10+1)*50 }))
+    .on("tick", ticked);
+*/
+
+//repartition démelage
+    var simulation = d3.forceSimulation()
+.force("link", d3.forceLink().id(function(d) {return d.id; }).distance(function(d,i){return 1}))
+  .force("charge", d3.forceCollide().radius(30))
+//   .force("r", d3.forceRadial(function(d)  {return d.nomination.award === "Best Motion Picture of the Year" ? 50 : 500; }))
+  .force("center", d3.forceCenter(0,0))
+
+
+
+
 
 
     var link = svg.append("g")
@@ -53,19 +70,22 @@
     .selectAll("line")
     .data(network.links)
     .enter().append("line")
-    .attr("stroke", "black");
+    .attr("stroke", "grey");
+
+    var color=d3.scaleOrdinal(d3.schemeCategory10);
 
     var node = svg.append("g")
     .attr("class", "nodes")
     .selectAll("circle")
     .data(network.nodes)
     .enter().append("circle")
-    .attr("r", 10)
+    .attr("r", 8)
+    .attr('fill',function(d){return color(d.nomination.award)})
     .on("mouseover", d => {
       tooltip.transition()
       .duration(200)
       .style("opacity", .9);
-      tooltip.html(`<p>${d.name}</p>`+`<p>Film: ${d.nomination.movie}</p>`+`<p>Nomination: ${d.nomination.award}</p>`)
+      tooltip.html(`<p><b>Name : </b>${d.name}</p>`+`<p><b>Film : </b>${d.nomination.movie}</p>`+`<p><b>Nomination : </b>${d.nomination.award}</p>`)
       //tooltip.html(`<b>${d.nomination.movie}</b>`)
       .style("left", (d3.event.pageX + 5) + "px")
       .style("top", (d3.event.pageY - 28) + "px");
@@ -88,7 +108,7 @@
     simulation.force("link")
     .links(network.links);
 
-    console.log(network.links)
+
     function ticked () {
       link.attr("x1", function(d) { return d.source.x; })
       .attr("y1", function(d) { return d.source.y; })
