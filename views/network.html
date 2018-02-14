@@ -2,14 +2,22 @@
 <head>
   <meta charset="utf-8">
   <script src="/d3"></script>
+  <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
   <style>
   body { margin:0;position:fixed;top:0;right:0;bottom:0;left:0; }
   .tooltip {
-    position: absolute;
     width: 200px;
-    height: 28px;
+    height: 100px;
     pointer-events: none;
-    background-color: white;
+    position: absolute;
+    text-align: left;
+    padding: 8px;
+    font: 12px roboto;
+
+    background: #039BE5;
+    border: 1px;
+    border-radius: 5px;
+    color: #ECEFF1;
   }
   </style>
 </head>
@@ -57,7 +65,8 @@
       tooltip.transition()
       .duration(200)
       .style("opacity", .9);
-      tooltip.html(`<b>${d.name}</b>`)
+      tooltip.html(`<p>${d.name}</p>`+`<p>Film: ${d.nomination.movie}</p>`+`<p>Nomination: ${d.nomination.award}</p>`)
+      //tooltip.html(`<b>${d.nomination.movie}</b>`)
       .style("left", (d3.event.pageX + 5) + "px")
       .style("top", (d3.event.pageY - 28) + "px");
     })
@@ -143,6 +152,7 @@
       actor={};
       actor.name=data[i].name;
       actor.id=data[i].id;
+      actor.nomination=data[i].nomination[0];
       network.nodes.push(actor);
       credtis_i=[];
       credits_i=data[i].credits.crew.concat(data[i].credits.cast);
