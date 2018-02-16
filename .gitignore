@@ -10,5 +10,4 @@ node_modules/
 .npm
 
 # Data
-database.json
 *.secrets.json
