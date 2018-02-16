@@ -40,9 +40,11 @@
   .style("opacity", 0);
 
   d3.json("/database.json", function(json) {
-var check=["Best Motion Picture of the Year"]
-    var network=format_to_network(json,check);
-    console.log(network)
+
+var init_award=list_award(json);
+    var network=format_to_network(json,init_award);
+
+    console.log(network);
 /*
 //repartition éclatee
     var simulation = d3.forceSimulation()
@@ -276,6 +278,15 @@ simulation.restart();
     return network;
   }
 
+function list_award(data){
+  output=[];
+  for (var i=0;i<data.length;i++){
+    if (!output.includes(data[i].nomination[0].award)){
+      output.push(data[i].nomination[0].award);
+    }
+  }
+  return output;
+}
 
   </script>
 </body>
