@@ -2,7 +2,7 @@
 <head>
   <meta charset="utf-8">
   <script src="/d3"></script>
-  <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
   <style>
   body { margin:0;position:fixed;top:0;right:0;bottom:0;left:0; }
   .tooltip {
@@ -67,7 +67,7 @@
     var link = svg.append("g")
     .attr("class", "links")
     .selectAll("line")
-    .data(network.links)
+    .data(network.links,function(d){return d.id;})
     .enter().append("line")
     .attr("stroke", "grey");
 
@@ -76,7 +76,7 @@
     var node = svg.append("g")
     .attr("class", "nodes")
     .selectAll("circle")
-    .data(network.nodes)
+    .data(network.nodes,function(d){return d.id;})
     .enter().append("circle")
     .attr("r", 8)
     .attr("id", function(d) { return "_" + d.id; })
@@ -94,7 +94,7 @@
         d3.selectAll("circle").style("opacity", .1);
 
         d3.select("#_" + d.id).attr("r", 30).style("opacity",1)
-          .transition().attr("r", 20);
+          .transition().attr("r", 8);
         d3.selectAll("line").style("opacity", .1);
         touchID=d.id;
         textDisplay=svg.append("g").attr("class", "text_link")
@@ -163,6 +163,35 @@
     .links(network.links);
 
 
+
+
+    svg.on("click",function(){
+restart()
+    })
+
+
+    function restart() {
+      trackID=network.nodes[10].id
+      network.links = network.links.filter(function(l) {
+    return l.source.id !=trackID &&  l.target.id != trackID;
+  });
+  network.nodes.splice(10,1);
+
+d3
+  .selectAll("circle")
+  .data(network.nodes,function(d){return d.id;})
+  .exit().remove();
+
+  d3
+      .selectAll("line")
+      .data(network.links,function(d){return d.id;})
+      .exit().remove();
+simulation.restart();
+
+    }
+
+
+
     function ticked () {
       link.attr("x1", function(d) { return d.source.x; })
       .attr("y1", function(d) { return d.source.y; })
@@ -172,10 +201,10 @@
       node.attr("cx", function (d) { return d.x; })
       .attr("cy", function(d) { return d.y; });
     }
-  });
+
 
   function dragstarted(d) {
-    if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+    if (!d3.event.active) simulation.alphaTarget(0.1).restart();
     d.fx = d.x;
     d.fy = d.y;
   }
@@ -186,11 +215,11 @@
   }
 
   function dragended(d) {
-    if (!d3.event.active) simulation.alphaTarget(0);
+    if (!d3.event.active) simulation.alphaTarget(0.01);
     d.fx = null;
     d.fy = null;
   }
-
+});
   function is_alone(data){
     var output=[];
 
@@ -235,7 +264,9 @@
               link.target=data[j].id;
               link.movie=credits_i[l].original_title;
               link.movie_id=credits_i[l].id;
+              link.id=data[i].id+"_"+data[j].id+"_"+credits_i[l].id;
               network.links.push(link);
+
             }
           }
         }
