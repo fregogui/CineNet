@@ -42,6 +42,8 @@
   d3.json("/database.json", function(json) {
 
 var init_award=list_award(json);
+var checked=list_award_checked(init_award);
+console.log(checked);
     var network=format_to_network(json,init_award);
 
 
@@ -150,17 +152,17 @@ var init_award=list_award(json);
 
 
 
-
-
+    svg.on("click",function(){
+restart()
     })
 
 
     function restart() {
-      /*trackID=network.nodes[10].id
+      trackID=network.nodes[10].id
       network.links = network.links.filter(function(l) {
     return l.source.id !=trackID &&  l.target.id != trackID;
   });
-  network.nodes.splice(10,1);*/
+  network.nodes.splice(10,1);
 
 d3
   .selectAll("circle")
@@ -278,5 +280,12 @@ function list_award(data){
   return output;
 }
 
+function list_award_checked(data){
+  output=[];
+  for (var i=0;i<data.length;i++){
+    output.push([data[i],1])
+  }
+  return output;
+}
   </script>
 </body>
