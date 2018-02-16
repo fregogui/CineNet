@@ -40,8 +40,9 @@
   .style("opacity", 0);
 
   d3.json("/database.json", function(json) {
-
-    var network=format_to_network(json);
+var check=["Best Motion Picture of the Year"]
+    var network=format_to_network(json,check);
+    console.log(network)
 /*
 //repartition éclatee
     var simulation = d3.forceSimulation()
@@ -86,7 +87,6 @@
       .duration(1000)
       .style("opacity", 0.5);
       tooltip.html(`<p><b>Name : </b>${d.name}</p>`+`<p><b>Film : </b>${d.nomination.movie}</p>`+`<p><b>Nomination : </b>${d.nomination.award}</p>`)
-      //tooltip.html(`<b>${d.nomination.movie}</b>`)
       .style("left", "5px")
       .style("top", "15px");
 
@@ -231,12 +231,17 @@ simulation.restart();
     return output;
   }
 
-  function format_to_network(data){
+
+
+
+  function format_to_network(data,choice){
     n=data.length;
 
     network={"nodes":[],"links":[]}
     for (var i=0;i<n;i++){
       actor={};
+
+      if (choice.includes(data[i].nomination[0].award)){
       actor.name=data[i].name;
       actor.id=data[i].id;
       actor.nomination=data[i].nomination[0];
@@ -245,8 +250,10 @@ simulation.restart();
       credits_i=data[i].credits.crew.concat(data[i].credits.cast);
       movies_i=[];
       for (var j=i+1;j<n;j++){
+        if (choice.includes(data[j].nomination[0].award)){
         movies_j=[];
         credits_j= data[j].credits.crew.concat(data[j].credits.cast);
+
         for (var l=0;l<credits_i.length;l++){
           for (var m=0;m<credits_j.length;m++){
             if (movies_i.includes(credits_i[l].id)==false && movies_j.includes(credits_j[m].id)==false && credits_i[l].id===credits_j[m].id){
@@ -259,8 +266,9 @@ simulation.restart();
               link.movie_id=credits_i[l].id;
               link.id=data[i].id+"_"+data[j].id+"_"+credits_i[l].id;
               network.links.push(link);
-
+}
             }
+          }
           }
         }
       }
@@ -268,6 +276,6 @@ simulation.restart();
     return network;
   }
 
-  
+
   </script>
 </body>
