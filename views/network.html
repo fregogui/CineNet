@@ -4,7 +4,14 @@
   <script src="/d3"></script>
   <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
   <style>
-  body { margin:0;position:fixed;top:0;right:0;bottom:0;left:0; }
+  body { margin:0;
+    position:fixed;
+    top:0;
+    right:0;
+    bottom:0;
+    left:0;
+    background: black;
+  }
   .tooltip {
     width: 200px;
     height: 100px;
@@ -14,11 +21,13 @@
     padding: 5px;
     font: 12px roboto;
 
-    background: #566573  ;
+    background: black;
     border: 1px;
     border-radius: 5px;
     color: #ECEFF1;
-    opacity: 0.1;
+  }
+  .links {
+    color: white;
   }
   </style>
 </head>
@@ -33,7 +42,6 @@
   .append( "svg" )
   .attr("viewBox", "-1000 -600 2000 1200");
 
-
   // add the tooltip area to the webpage
   let tooltip = d3.select("body").append("div")
   .attr("class", "tooltip")
@@ -42,27 +50,23 @@
   d3.json("/database.json", function(json) {
 
     var network=format_to_network(json);
-/*
-//repartition éclatee
+    /*
+    //repartition éclatee
     var simulation = d3.forceSimulation()
     .force("link", d3.forceLink().id(function(d) {return d.id; }).strength(function(d,i){return 0.01;}))
     .force("charge", d3.forceManyBody(20))
     .force("charge", d3.forceCollide().radius(10))
     .force("r", d3.forceRadial(function(d,i)  {return (i%10+1)*50 }))
     .on("tick", ticked);
-*/
+    */
 
-//repartition démelage
+    //repartition démelage
     var simulation = d3.forceSimulation()
-.force("link", d3.forceLink().id(function(d) {return d.id; }).distance(function(d,i){return 1}))
-  .force("charge", d3.forceCollide().radius(35))
-//   .force("r", d3.forceRadial(function(d)  {return d.nomination.award === "Best Motion Picture of the Year" ? 50 : 500; }))
-  .force("center", d3.forceCenter(0,0))
-  .on("tick",ticked);
-
-
-
-
+    .force("link", d3.forceLink().id(function(d) {return d.id; }).distance(function(d,i){return 1}))
+    .force("charge", d3.forceCollide().radius(35))
+    //   .force("r", d3.forceRadial(function(d)  {return d.nomination.award === "Best Motion Picture of the Year" ? 50 : 500; }))
+    .force("center", d3.forceCenter(0,0))
+    .on("tick",ticked);
 
     var link = svg.append("g")
     .attr("class", "links")
@@ -85,163 +89,176 @@
       tooltip.transition()
       .duration(1000)
       .style("opacity", 0.5);
-      tooltip.html(`<p><b>Name : </b>${d.name}</p>`+`<p><b>Film : </b>${d.nomination.movie}</p>`+`<p><b>Nomination : </b>${d.nomination.award}</p>`)
+      tooltip.html(`<p><b>Name : </b>${d.name}</p><p><b>Film : </b>${d.nomination.movie}</p><p><b>Nomination : </b>${d.nomination.award}</p>`)
       //tooltip.html(`<b>${d.nomination.movie}</b>`)
-      .style("left", (d3.event.pageX + 5) + "px")
-      .style("top", (d3.event.pageY - 28) + "px");
+      .style("left", 5 + "px")
+      .style("top",  15 + "px")
 
+      d3.selectAll("circle").style("opacity", .1);
 
-        d3.selectAll("circle").style("opacity", .1);
-
-        d3.select("#_" + d.id).attr("r", 30).style("opacity",1)
-          .transition().attr("r", 20);
-        d3.selectAll("line").style("opacity", .1);
-        touchID=d.id;
-        textDisplay=svg.append("g").attr("class", "text_link")
-        svg.selectAll("line")
-          .filter(function(d) {
-            if(d.source.id === touchID || d.target.id === touchID) {
-              d3.selectAll("circle").filter(function(f) {
-                if(d.source.id === f.id ||  d.target.id === f.id) {name=f.name;
-                  xC=parseFloat(d3.select(this).attr("cx"));
-                  yC=parseFloat(d3.select(this).attr("cy"));
-                  id=parseFloat(d3.select(this).attr("id"));
-                  textDisplay.append("text")
-                    .attr("x",xC)
-                    .attr("y",yC)
-                    .text(function(f){return name;})
-                  return true; }
-              }).style("opacity", 1);
-              xA=parseFloat(d3.select(this).attr("x1"));
-              xB=parseFloat(d3.select(this).attr("x2"));
-              yA=parseFloat(d3.select(this).attr("y1"));
-              yB=parseFloat(d3.select(this).attr("y2"));
-              xT=xA+(xB-xA)/2.0;
-              yT=yA+(yB-yA)/2.0;
-              movieT=d.movie;
-              theta=(Math.PI / 180.0)*Math.acos(Math.abs(xB-xA)/Math.sqrt((yB-yA)*(yB-yA)+(xB-xA)*(xB-xA))/2.0);
+      d3.select("#_" + d.id).attr("r", 30).style("opacity",1)
+      .transition().attr("r", 20);
+      d3.selectAll("line").style("opacity", .1);
+      touchID=d.id;
+      textDisplay=svg.append("g").attr("class", "text_link")
+      svg.selectAll("line")
+      .filter(function(d) {
+        if(d.source.id === touchID || d.target.id === touchID) {
+          d3.selectAll("circle").filter(function(f) {
+            if(d.source.id === f.id ||  d.target.id === f.id) {name=f.name;
+              xC=parseFloat(d3.select(this).attr("cx"));
+              yC=parseFloat(d3.select(this).attr("cy"));
+              id=parseFloat(d3.select(this).attr("id"));
               textDisplay.append("text")
-                .attr("x",xT)
-                .attr("y",yT)
-                .text(function(d){return movieT});
+              .attr("x",xC)
+              .attr("y",yC)
+              .text(function(f){return name;})
+              return true; }
+            }).style("opacity", 1);
+            xA=parseFloat(d3.select(this).attr("x1"));
+            xB=parseFloat(d3.select(this).attr("x2"));
+            yA=parseFloat(d3.select(this).attr("y1"));
+            yB=parseFloat(d3.select(this).attr("y2"));
+            xT=xA+(xB-xA)/2.0;
+            yT=yA+(yB-yA)/2.0;
+            movieT=d.movie;
+            theta=(Math.PI / 180.0)*Math.acos(Math.abs(xB-xA)/Math.sqrt((yB-yA)*(yB-yA)+(xB-xA)*(xB-xA))/2.0);
+            textDisplay.append("text")
+            .attr("x",xT)
+            .attr("y",yT)
+            .text(function(d){return movieT});
 
-              return true;
-            }
-          })
-          .style("opacity", 1)
-          .attr("stroke","black");
+            return true;
+          }
+        })
+        .style("opacity", 1)
+        .attr("stroke","white");
+      })
+      .on("mouseout", d => {
+        tooltip.transition()
+        .duration(500)
+        .style("opacity", 0);
 
-
-
-
-
-
-
-
-    })
-    .on("mouseout", d => {
-      tooltip.transition()
-      .duration(500)
-      .style("opacity", 0);
-
-      d3.selectAll("circle").style("opacity",1).attr("r",8);
-      d3.selectAll("line").style("opacity",1).attr("stroke","grey");
-      svg.selectAll(".text_link").remove();
-
-
-    })
-    .call(d3.drag()
-    .on("start", dragstarted)
-    .on("drag", dragged)
-    .on("end", dragended));
-
-    simulation
-    .nodes(network.nodes)
-    .on("tick", ticked);
-
-    simulation.force("link")
-    .links(network.links);
+        d3.selectAll("circle").style("opacity",1).attr("r",8);
+        d3.selectAll("line").style("opacity",1).attr("stroke", "white");
+        svg.selectAll(".text_link").remove();
 
 
-    function ticked () {
-      link.attr("x1", function(d) { return d.source.x; })
-      .attr("y1", function(d) { return d.source.y; })
-      .attr("x2", function(d) { return d.target.x; })
-      .attr("y2", function(d) { return d.target.y; });
+      })
+      .call(d3.drag()
+      .on("start", dragstarted)
+      .on("drag", dragged)
+      .on("end", dragended));
 
-      node.attr("cx", function (d) { return d.x; })
-      .attr("cy", function(d) { return d.y; });
+      simulation
+      .nodes(network.nodes)
+      .on("tick", ticked);
+
+      simulation.force("link")
+      .links(network.links);
+
+
+      function ticked () {
+        link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+        node.attr("cx", function (d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+      }
+
+      // draw legend
+      var legend = svg.selectAll(".legend")
+      .data(color.domain())
+      .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", (d, i) => { return "translate(0," + i * 20 + ")"; });
+
+      // draw legend colored rectangles
+      legend.append("rect")
+      .attr("x", width - 18)
+      .attr("width", 18)
+      .attr("height", 18)
+      .style("fill", color);
+
+      // draw legend text
+      legend.append("text")
+      .attr("x", width - 24)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .text(d => { return d;})
+    });
+
+
+    function dragstarted(d) {
+      if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
     }
-  });
 
-  function dragstarted(d) {
-    if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-    d.fx = d.x;
-    d.fy = d.y;
-  }
+    function dragged(d) {
+      d.fx = d3.event.x;
+      d.fy = d3.event.y;
+    }
 
-  function dragged(d) {
-    d.fx = d3.event.x;
-    d.fy = d3.event.y;
-  }
+    function dragended(d) {
+      if (!d3.event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+    }
 
-  function dragended(d) {
-    if (!d3.event.active) simulation.alphaTarget(0);
-    d.fx = null;
-    d.fy = null;
-  }
+    function is_alone(data){
+      var output=[];
 
-  function is_alone(data){
-    var output=[];
+      for (var i=0;i<data.nodes.length;i++){
+        c=1;
+        for (var j=0;j<data.links.length;j++){
+          if (data.nodes[i].id==data.links[j].source_id || data.nodes[i].id==data.links[j].target_id ){
+            c=0;
+          }
 
-    for (var i=0;i<data.nodes.length;i++){
-      c=1;
-      for (var j=0;j<data.links.length;j++){
-        if (data.nodes[i].id==data.links[j].source_id || data.nodes[i].id==data.links[j].target_id ){
-          c=0;
         }
-
+        if (c==1){
+          output.push(data.nodes[i]);
+        }
       }
-      if (c==1){
-        output.push(data.nodes[i]);
-      }
+      return output;
     }
-    return output;
-  }
 
-  function format_to_network(data){
-    n=data.length;
+    function format_to_network(data){
+      let n=data.length;
 
-    network={"nodes":[],"links":[]}
-    for (var i=0;i<n;i++){
-      actor={};
-      actor.name=data[i].name;
-      actor.id=data[i].id;
-      actor.nomination=data[i].nomination[0];
-      network.nodes.push(actor);
-      credtis_i=[];
-      credits_i=data[i].credits.crew.concat(data[i].credits.cast);
-      movies_i=[];
-      for (var j=i+1;j<n;j++){
-        movies_j=[];
-        credits_j= data[j].credits.crew.concat(data[j].credits.cast);
-        for (var l=0;l<credits_i.length;l++){
-          for (var m=0;m<credits_j.length;m++){
-            if (movies_i.includes(credits_i[l].id)==false && movies_j.includes(credits_j[m].id)==false && credits_i[l].id===credits_j[m].id){
-              link={};
-              movies_i.push(credits_i[l].id);
-              movies_j.push(credits_j[m].id);
-              link.source=data[i].id;
-              link.target=data[j].id;
-              link.movie=credits_i[l].original_title;
-              link.movie_id=credits_i[l].id;
-              network.links.push(link);
+      network={"nodes":[],"links":[]}
+      for (var i=0;i<n;i++){
+        let actor={};
+        actor.name=data[i].name;
+        actor.id=data[i].id;
+        actor.nomination=data[i].nomination[0];
+        network.nodes.push(actor);
+        let credits_i=data[i].credits.crew.concat(data[i].credits.cast);
+        let movies_i=[];
+        for (var j=i+1;j<n;j++){
+          movies_j=[];
+          credits_j= data[j].credits.crew.concat(data[j].credits.cast);
+          for (var l=0;l<credits_i.length;l++){
+            for (var m=0;m<credits_j.length;m++){
+              if (movies_i.includes(credits_i[l].id)===false && movies_j.includes(credits_j[m].id)===false && credits_i[l].id===credits_j[m].id){
+                link={};
+                movies_i.push(credits_i[l].id);
+                movies_j.push(credits_j[m].id);
+                link.source=data[i].id;
+                link.target=data[j].id;
+                link.movie=credits_i[l].original_title;
+                link.movie_id=credits_i[l].id;
+                network.links.push(link);
+              }
             }
           }
         }
       }
+      return network;
     }
-    return network;
-  }
-  </script>
-</body>
+    </script>
+  </body>
