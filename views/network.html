@@ -29,7 +29,6 @@
   .attr("class", "tooltip")
   .style("opacity", 0);
 
-
   d3.json("/database.json", function(json) {
 
     var network=format_to_network(json);
@@ -38,7 +37,6 @@
     .force("link", d3.forceLink().id(function(d) { return d.id; }))
     .force("charge", d3.forceManyBody(-20))
     .force("center", d3.forceCenter(width / 4, height / 4));
-
 
     var link = svg.append("g")
     .attr("class", "links")
@@ -75,7 +73,6 @@
     .nodes(network.nodes)
     .on("tick", ticked);
 
-
     simulation.force("link")
     .links(network.links);
 
@@ -88,12 +85,8 @@
 
       node.attr("cx", function (d) { return d.x; })
       .attr("cy", function(d) { return d.y; });
-
-
     }
-
   });
-
 
   function dragstarted(d) {
     if (!d3.event.active) simulation.alphaTarget(0.3).restart();
@@ -112,10 +105,6 @@
     d.fy = null;
   }
 
-
-
-
-
   function is_alone(data){
     var output=[];
 
@@ -133,7 +122,6 @@
     }
     return output;
   }
-
 
   function format_to_network(data){
     n=data.length;
@@ -164,13 +152,9 @@
             }
           }
         }
-
       }
     }
     return network;
   }
-
-
-
   </script>
 </body>
