@@ -44,16 +44,6 @@
 var init_award=list_award(json);
     var network=format_to_network(json,init_award);
 
-    console.log(network);
-/*
-//repartition éclatee
-    var simulation = d3.forceSimulation()
-    .force("link", d3.forceLink().id(function(d) {return d.id; }).strength(function(d,i){return 0.01;}))
-    .force("charge", d3.forceManyBody(20))
-    .force("charge", d3.forceCollide().radius(10))
-    .force("r", d3.forceRadial(function(d,i)  {return (i%10+1)*50 }))
-    .on("tick", ticked);
-*/
 
 //repartition démelage
     var simulation = d3.forceSimulation()
@@ -160,17 +150,17 @@ var init_award=list_award(json);
 
 
 
-    svg.on("click",function(){
-restart()
+
+
     })
 
 
     function restart() {
-      trackID=network.nodes[10].id
+      /*trackID=network.nodes[10].id
       network.links = network.links.filter(function(l) {
     return l.source.id !=trackID &&  l.target.id != trackID;
   });
-  network.nodes.splice(10,1);
+  network.nodes.splice(10,1);*/
 
 d3
   .selectAll("circle")
