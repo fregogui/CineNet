@@ -14,11 +14,11 @@
     padding: 5px;
     font: 12px roboto;
 
-    background: #566573  ;
+    background: black  ;
     border: 1px;
     border-radius: 5px;
     color: #ECEFF1;
-    opacity: 0.1;
+    opacity: 0.5;
   }
   </style>
 </head>
@@ -37,7 +37,7 @@
   // add the tooltip area to the webpage
   let tooltip = d3.select("body").append("div")
   .attr("class", "tooltip")
-  .style("opacity", 0.1);
+  .style("opacity", 0);
 
   d3.json("/database.json", function(json) {
 
@@ -87,8 +87,8 @@
       .style("opacity", 0.5);
       tooltip.html(`<p><b>Name : </b>${d.name}</p>`+`<p><b>Film : </b>${d.nomination.movie}</p>`+`<p><b>Nomination : </b>${d.nomination.award}</p>`)
       //tooltip.html(`<b>${d.nomination.movie}</b>`)
-      .style("left", (d3.event.pageX + 5) + "px")
-      .style("top", (d3.event.pageY - 28) + "px");
+      .style("left", "5px")
+      .style("top", "15px");
 
 
         d3.selectAll("circle").style("opacity", .1);
@@ -130,13 +130,6 @@
           })
           .style("opacity", 1)
           .attr("stroke","black");
-
-
-
-
-
-
-
 
     })
     .on("mouseout", d => {
