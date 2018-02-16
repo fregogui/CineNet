@@ -26,12 +26,13 @@
 <body>
   <script>
   var width = 2000,
-  height = 1200;
+  heigth = 1200,
+  radius=35;
 
 
   var svg = d3.select( "body" )
   .append( "svg" )
-  .attr("viewBox", "-1000 -600 2000 1200");
+  .attr("viewBox", function(){return String(-width/2)+" "+String(-heigth/2)+" "+String(width)+" "+String(heigth)});
 
 
   // add the tooltip area to the webpage
@@ -50,7 +51,7 @@ console.log(checked);
 //repartition démelage
     var simulation = d3.forceSimulation()
 .force("link", d3.forceLink().id(function(d) {return d.id; }).distance(function(d,i){return 1}))
-  .force("charge", d3.forceCollide().radius(35))
+  .force("charge", d3.forceCollide().radius(50))
 //   .force("r", d3.forceRadial(function(d)  {return d.nomination.award === "Best Motion Picture of the Year" ? 50 : 500; }))
   .force("center", d3.forceCenter(0,0))
   .on("tick",ticked);
@@ -185,8 +186,8 @@ simulation.restart();
       .attr("x2", function(d) { return d.target.x; })
       .attr("y2", function(d) { return d.target.y; });
 
-      node.attr("cx", function (d) { return d.x; })
-      .attr("cy", function(d) { return d.y; });
+      node.attr("cx", function (d) { return d.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.x)); })
+      .attr("cy", function(d) { return d.y= Math.max(-heigth/2+radius, Math.min(heigth/2 - radius*2, d.y)); });
     }
 
 
