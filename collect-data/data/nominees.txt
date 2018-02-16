@@ -3,7 +3,7 @@ Peter Spears,Luca Guadagnino,Emilie Georges,Marco Morabito|Call Me by Your Name|
 Emma Thomas,Christopher Nolan|Dunkirk|Best Motion Picture of the Year
 Sean McKittrick,Jason Blum,Edward H. Hamm Jr.,Jordan Peele|Get Out|Best Motion Picture of the Year
 Guillermo del Toro,J. Miles Dale|The Shape of Water|Best Motion Picture of the Year
-Scott Rudin, Eli Bush, Evelyn O'Neill|Lady Bird|Best Motion Picture of the Year
+Scott Rudin,Eli Bush,Evelyn O'Neill|Lady Bird|Best Motion Picture of the Year
 Tim Bevan,Eric Fellner,Lisa Bruce,Anthony McCarten,Douglas Urbanski|Darkest Hour|Best Motion Picture of the Year
 Amy Pascal,Steven Spielberg,Kristie Macosko Krieger|The Post|Best Motion Picture of the Year
 JoAnne Sellar,Paul Thomas Anderson,Megan Ellison,Daniel Lupi|Phantom Thread|Best Motion Picture of the Year
@@ -11,7 +11,7 @@ Daniel Day-Lewis|Phantom Thread|Best Performance by an Actor in a Leading Role
 Daniel Kaluuya|Get Out|Best Performance by an Actor in a Leading Role
 Denzel Washington|Roman J. Israel, Esq.|Best Performance by an Actor in a Leading Role
 Gary Oldman|Darkest Hour|Best Performance by an Actor in a Leading Role
-Timothée Chalamet|Call Me by Your Name|Best Performance by an Actor in a Leading Role
+Timothï¿½e Chalamet|Call Me by Your Name|Best Performance by an Actor in a Leading Role
 Frances McDormand|Three Billboards Outside Ebbing, Missouri|Best Performance by an Actress in a Leading Role
 Margot Robbie|I, Tonya|Best Performance by an Actress in a Leading Role
 Meryl Streep|The Post|Best Performance by an Actress in a Leading Role
@@ -28,7 +28,7 @@ Lesley Manville|Phantom Thread|Best Performance by an Actress in a Supporting Ro
 Mary J. Blige|Mudbound|Best Performance by an Actress in a Supporting Role
 Octavia Spencer|The Shape of Water|Best Performance by an Actress in a Supporting Role
 Christopher Nolan|Dunkirk|Best Achievement in Directing
-Greta Gerwig|Lady Bird|Best Achievement in Directing	
+Greta Gerwig|Lady Bird|Best Achievement in Directing
 Guillermo del Toro|The Shape of Water|Best Achievement in Directing
 Jordan Peele|Get Out|Best Achievement in Directing
 Paul Thomas Anderson|Phantom Thread|Best Achievement in Directing
@@ -45,7 +45,7 @@ Scott Neustadter,Michael H. Weber|The Disaster Artist|Best Adapted Screenplay
 Roger Deakins|Blade Runner 2049|Best Achievement in Cinematography
 Hoyte Van Hoytema|Dunkirk|Best Achievement in Cinematography
 Dan Laustsen|The Shape of Water|Best Achievement in Cinematography
-Bruno Delbonnel|Darkest Hour|Best Achievement in Cinematography	
+Bruno Delbonnel|Darkest Hour|Best Achievement in Cinematography
 Rachel Morrison|Mudbound|Best Achievement in Cinematography
 Consolata Boyle|Victoria & Abdul|Best Achievement in Costume Design
 Jacqueline Durran|Beauty and the Beast|Best Achievement in Costume Design
