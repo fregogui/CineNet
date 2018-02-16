@@ -2,14 +2,23 @@
 <head>
   <meta charset="utf-8">
   <script src="/d3"></script>
+  <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
   <style>
   body { margin:0;position:fixed;top:0;right:0;bottom:0;left:0; }
   .tooltip {
-    position: absolute;
     width: 200px;
-    height: 28px;
+    height: 100px;
     pointer-events: none;
-    background-color: white;
+    position: absolute;
+    text-align: left;
+    padding: 5px;
+    font: 12px roboto;
+
+    background: #566573  ;
+    border: 1px;
+    border-radius: 5px;
+    color: #ECEFF1;
+    opacity: 0.1;
   }
   </style>
 </head>
@@ -17,52 +26,129 @@
 <body>
   <script>
   var width = 2000,
-  height = 1000;
+  height = 1200;
+
 
   var svg = d3.select( "body" )
   .append( "svg" )
-  .attr( "width", width )
-  .attr( "height", height );
+  .attr("viewBox", "-1000 -600 2000 1200");
+
 
   // add the tooltip area to the webpage
   let tooltip = d3.select("body").append("div")
   .attr("class", "tooltip")
-  .style("opacity", 0);
+  .style("opacity", 0.1);
 
   d3.json("/database.json", function(json) {
 
     var network=format_to_network(json);
-
+/*
+//repartition éclatee
     var simulation = d3.forceSimulation()
-    .force("link", d3.forceLink().id(function(d) { return d.id; }))
-    .force("charge", d3.forceManyBody(-20))
-    .force("center", d3.forceCenter(width / 4, height / 4));
+    .force("link", d3.forceLink().id(function(d) {return d.id; }).strength(function(d,i){return 0.01;}))
+    .force("charge", d3.forceManyBody(20))
+    .force("charge", d3.forceCollide().radius(10))
+    .force("r", d3.forceRadial(function(d,i)  {return (i%10+1)*50 }))
+    .on("tick", ticked);
+*/
+
+//repartition démelage
+    var simulation = d3.forceSimulation()
+.force("link", d3.forceLink().id(function(d) {return d.id; }).distance(function(d,i){return 1}))
+  .force("charge", d3.forceCollide().radius(35))
+//   .force("r", d3.forceRadial(function(d)  {return d.nomination.award === "Best Motion Picture of the Year" ? 50 : 500; }))
+  .force("center", d3.forceCenter(0,0))
+  .on("tick",ticked);
+
+
+
+
 
     var link = svg.append("g")
     .attr("class", "links")
     .selectAll("line")
     .data(network.links)
     .enter().append("line")
-    .attr("stroke", "black");
+    .attr("stroke", "grey");
+
+    var color=d3.scaleOrdinal(d3.schemeCategory10);
 
     var node = svg.append("g")
     .attr("class", "nodes")
     .selectAll("circle")
     .data(network.nodes)
     .enter().append("circle")
-    .attr("r", 10)
+    .attr("r", 8)
+    .attr("id", function(d) { return "_" + d.id; })
+    .attr('fill',function(d){return color(d.nomination.award)})
     .on("mouseover", d => {
       tooltip.transition()
-      .duration(200)
-      .style("opacity", .9);
-      tooltip.html(`<b>${d.name}</b>`)
+      .duration(1000)
+      .style("opacity", 0.5);
+      tooltip.html(`<p><b>Name : </b>${d.name}</p>`+`<p><b>Film : </b>${d.nomination.movie}</p>`+`<p><b>Nomination : </b>${d.nomination.award}</p>`)
+      //tooltip.html(`<b>${d.nomination.movie}</b>`)
       .style("left", (d3.event.pageX + 5) + "px")
       .style("top", (d3.event.pageY - 28) + "px");
+
+
+        d3.selectAll("circle").style("opacity", .1);
+
+        d3.select("#_" + d.id).attr("r", 30).style("opacity",1)
+          .transition().attr("r", 20);
+        d3.selectAll("line").style("opacity", .1);
+        touchID=d.id;
+        textDisplay=svg.append("g").attr("class", "text_link")
+        svg.selectAll("line")
+          .filter(function(d) {
+            if(d.source.id === touchID || d.target.id === touchID) {
+              d3.selectAll("circle").filter(function(f) {
+                if(d.source.id === f.id ||  d.target.id === f.id) {name=f.name;
+                  xC=parseFloat(d3.select(this).attr("cx"));
+                  yC=parseFloat(d3.select(this).attr("cy"));
+                  id=parseFloat(d3.select(this).attr("id"));
+                  textDisplay.append("text")
+                    .attr("x",xC)
+                    .attr("y",yC)
+                    .text(function(f){return name;})
+                  return true; }
+              }).style("opacity", 1);
+              xA=parseFloat(d3.select(this).attr("x1"));
+              xB=parseFloat(d3.select(this).attr("x2"));
+              yA=parseFloat(d3.select(this).attr("y1"));
+              yB=parseFloat(d3.select(this).attr("y2"));
+              xT=xA+(xB-xA)/2.0;
+              yT=yA+(yB-yA)/2.0;
+              movieT=d.movie;
+              theta=(Math.PI / 180.0)*Math.acos(Math.abs(xB-xA)/Math.sqrt((yB-yA)*(yB-yA)+(xB-xA)*(xB-xA))/2.0);
+              textDisplay.append("text")
+                .attr("x",xT)
+                .attr("y",yT)
+                .text(function(d){return movieT});
+
+              return true;
+            }
+          })
+          .style("opacity", 1)
+          .attr("stroke","black");
+
+
+
+
+
+
+
+
     })
     .on("mouseout", d => {
       tooltip.transition()
       .duration(500)
       .style("opacity", 0);
+
+      d3.selectAll("circle").style("opacity",1).attr("r",8);
+      d3.selectAll("line").style("opacity",1).attr("stroke","grey");
+      svg.selectAll(".text_link").remove();
+
+
     })
     .call(d3.drag()
     .on("start", dragstarted)
@@ -76,7 +162,7 @@
     simulation.force("link")
     .links(network.links);
 
-    console.log(network.links)
+
     function ticked () {
       link.attr("x1", function(d) { return d.source.x; })
       .attr("y1", function(d) { return d.source.y; })
@@ -131,6 +217,7 @@
       actor={};
       actor.name=data[i].name;
       actor.id=data[i].id;
+      actor.nomination=data[i].nomination[0];
       network.nodes.push(actor);
       credtis_i=[];
       credits_i=data[i].credits.crew.concat(data[i].credits.cast);
