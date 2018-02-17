@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <script src="/d3"></script>
+  <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+  <style>
+  body { margin:0;position:fixed;top:0;right:0;bottom:0;left:0; }
+  .tooltip {
+    width: 200px;
+    height: 100px;
+    pointer-events: none;
+    position: absolute;
+    text-align: left;
+    padding: 5px;
+    font: 12px roboto;
+
+    background: black  ;
+    border: 1px;
+    border-radius: 5px;
+    color: #ECEFF1;
+    opacity: 0.5;
+  }
+  </style>
+</head>
+
+<body>
+  <script>
+  var width = 2000,
+  heigth = 1200,
+  radius=35;
+
+
+  var svg = d3.select( "body" )
+  .append( "svg" )
+  .attr("viewBox", function(){return String(-width/2)+" "+String(-heigth/2)+" "+String(width)+" "+String(heigth)});
+
+
+  // add the tooltip area to the webpage
+  let tooltip = d3.select("body").append("div")
+  .attr("class", "tooltip")
+  .style("opacity", 0);
+
+  d3.json("/database.json", function(json) {
+
+    var init_award=list_award(json);
+    var network=format_to_network(json,init_award);
+
+    //repartition démelage
+    var simulation = d3.forceSimulation()
+    .force("link", d3.forceLink().id(function(d) {return d.id; }).distance(function(d,i){return 1}))
+    .force("charge", d3.forceCollide().radius(35))
+    //   .force("r", d3.forceRadial(function(d)  {return d.nomination.award === "Best Motion Picture of the Year" ? 50 : 500; }))
+    .force("center", d3.forceCenter(0,0))
+    .on("tick",ticked);
+
+    var link = svg.append("g")
+    .attr("class", "links")
+    .selectAll("line")
+    .data(network.links,function(d){return d.id;})
+    .enter().append("line")
+    .attr("stroke", "grey");
+
+    var color=d3.scaleOrdinal(d3.schemeCategory10);
+
+    var node = svg.append("g")
+    .attr("class", "nodes")
+    .selectAll("circle")
+    .data(network.nodes,function(d){return d.id;})
+    .enter().append("circle")
+    .attr("r", 8)
+    .attr("id", function(d) { return "_" + d.id; })
+    .attr('fill',function(d){return color(d.nomination.award)})
+    .on("mouseover", d => {
+      tooltip.transition()
+      .duration(1000)
+      .style("opacity", 0.5);
+      tooltip.html(`<p><b>Name : </b>${d.name}</p>`+`<p><b>Film : </b>${d.nomination.movie}</p>`+`<p><b>Nomination : </b>${d.nomination.award}</p>`)
+      .style("left", "5px")
+      .style("top", "15px");
+      name_mouse=d.name;
+      d3.selectAll("circle").style("opacity", .1);
+
+      d3.select("#_" + d.id).attr("r", 30).style("opacity",1)
+      .transition().attr("r", 8);
+      d3.selectAll("line").style("opacity", .1);
+      touchID=d.id;
+      textDisplay=svg.append("g").attr("class", "text_link")
+      svg.selectAll("line")
+      .filter(function(d) {
+        if(d.source.id === touchID || d.target.id === touchID) {
+          d3.selectAll("circle").filter(function(f) {
+            if(d.source.id === f.id ||  d.target.id === f.id) {name_node=f.name;
+              if (name_node!=name_mouse){
+              xC=parseFloat(d3.select(this).attr("cx"));
+              yC=parseFloat(d3.select(this).attr("cy"));
+              id=parseFloat(d3.select(this).attr("id"));
+              textDisplay.append("text")
+              .attr("x",xC)
+              .attr("y",yC)
+              .text(function(f){return name;})}
+              return true; }
+            }).style("opacity", 1);
+            xA=parseFloat(d3.select(this).attr("x1"));
+            xB=parseFloat(d3.select(this).attr("x2"));
+            yA=parseFloat(d3.select(this).attr("y1"));
+            yB=parseFloat(d3.select(this).attr("y2"));
+            xT=xA+(xB-xA)/2.0;
+            yT=yA+(yB-yA)/2.0;
+            movieT=d.movie;
+            theta=(Math.PI / 180.0)*Math.acos(Math.abs(xB-xA)/Math.sqrt((yB-yA)*(yB-yA)+(xB-xA)*(xB-xA))/2.0);
+            textDisplay.append("text")
+            .attr("x",xT)
+            .attr("y",yT)
+            .text(function(d){return movieT});
+
+            return true;
+          }
+        })
+        .style("opacity", 1)
+        .attr("stroke","black");
+      })
+      .on("mouseout", d => {
+        tooltip.transition()
+        .duration(500)
+        .style("opacity", 0);
+
+        d3.selectAll("circle").style("opacity",1).attr("r",8);
+        d3.selectAll("line").style("opacity",1).attr("stroke","grey");
+        svg.selectAll(".text_link").remove();
+      })
+      .call(d3.drag()
+      .on("start", dragstarted)
+      .on("drag", dragged)
+      .on("end", dragended));
+
+      simulation
+      .nodes(network.nodes)
+      .on("tick", ticked);
+
+      simulation.force("link")
+      .links(network.links);
+
+      function restart(data_to_remove,data_to_add) {
+        new_network=JSON.parse(JSON.stringify(network));
+        new_network.links = new_network.links.filter(function(l) {
+          return !data_to_remove.links.includes(l.id);
+        });
+        new_network.nodes=new_network.nodes.filter(function(l){
+          return !data_to_remove.nodes.includes(l.id)
+        });
+
+
+
+        d3
+        .selectAll("circle")
+        .data(network.nodes.filter(function(l){
+          return !data_to_remove.nodes.includes(l.id)
+        }),function(d){return d.id;})
+        .exit().remove();
+
+        d3
+        .selectAll("line")
+        .data(network.links.filter(function(l){
+          return !data_to_remove.links.includes(l.id)
+        }),function(d){return d.id;})
+        .exit().remove();
+
+
+    /*    d3.select(".nodes").selectAll("circle").data(network.nodes.filter(function(l){
+          return data_to_add.nodes.includes(l.id)
+        }),function(d){return d.id;}).enter().append("circle").attr("r", 8)
+          .attr("id", function(d) { return "_" + d.id; })
+          .attr('fill',function(d){return color(d.nomination.award)})
+          .call(d3.drag().merge(node)
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended));*/
+
+
+
+
+        d3.select(".links").selectAll("line").data(network.links.filter(function(l){
+          return data_to_add.links.includes(l.id)
+        }),function(d){return d.id;})
+          .enter().append("line")
+          .attr("stroke", "grey");
+
+
+
+          var simulation = d3.forceSimulation()
+
+          .force("link", d3.forceLink().id(function(d) {return d.id; }).distance(function(d,i){return 1}))
+          .force("charge", d3.forceCollide().radius(35))
+          .force("center", d3.forceCenter(0,0))
+          .on("tick",ticked);
+
+          simulation
+          .nodes(new_network.nodes)
+          .on("tick", ticked);
+
+          simulation.force("link")
+          .links(new_network.links);
+          simulation.restart();
+
+    /*  node
+        .selectAll("circle")
+        .data(network.nodes.filter(function(l){
+          return !data_to_add.nodes.includes(l.id)
+        }),function(d){return d.id;})
+        .enter().append("circle")
+        .attr("r", 8)
+        .attr("id", function(d) { return "_" + d.id; })
+        .attr('fill',function(d){return color(d.nomination.award)})*/
+
+      }
+
+      function ticked () {
+        link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+        node.attr("cx", function (d) { return d.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.x)); })
+        .attr("cy", function(d) { return d.y= Math.max(-heigth/2+radius, Math.min(heigth/2 - radius, d.y)); });
+      }
+
+      function dragstarted(d) {
+        if (!d3.event.active) simulation.alphaTarget(0.1).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+      }
+
+      function dragged(d) {
+        d.fx = d3.event.x;
+        d.fy = d3.event.y;
+      }
+
+      function dragended(d) {
+        if (!d3.event.active) simulation.alphaTarget(0.01);
+        d.fx = null;
+        d.fy = null;
+      }
+
+      /* init an array in which we want to store nodes we will delete*/
+      var data_to_remove_old ={"nodes":[],"links":[]};
+      var data_to_remove_new ={"nodes":[],"links":[]};
+      var data_to_add={"nodes":[],"links":[]};
+
+      // draw legend
+      var legend = svg.selectAll(".legend")
+      .data(color.domain())
+      .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", (d, i) => { return "translate(300," + i * 20 + ")"; });
+
+      // draw legend colored rectangles
+      legend.append("rect")
+      .attr("x", width/4)
+      .attr("width", 18)
+      .attr("height", 18)
+      .style("fill", color)
+      .on("click", d => {
+        data_to_remove_old=JSON.parse(JSON.stringify(data_to_remove_new));
+        for (var i=0;i<network.nodes.length;i++){
+          if (network.nodes[i].nomination.award===d){
+            if (data_to_remove_new.nodes.includes(network.nodes[i].id)){
+              data_to_remove_new.nodes.splice(data_to_remove_new.nodes.indexOf(network.nodes[i].id),1);
+            }
+            else {
+              data_to_remove_new.nodes.push(network.nodes[i].id)
+
+          }
+
+          }
+        }
+        data_to_remove_new.links=[];
+        for (var k=0;k<data_to_remove_new.nodes.length;k++){
+        for (var j=0;j<network.links.length;j++){
+          if(network.links[j].source.id===data_to_remove_new.nodes[k] || network.links[j].target.id===data_to_remove_new.nodes[k]){
+            data_to_remove_new.links.push(network.links[j].id);
+          }
+        }
+      }
+      data_to_add={"nodes":[],"links":[]};
+      data_to_add.links=data_to_remove_old.links.diff(data_to_remove_new.links);
+      data_to_add.nodes=data_to_remove_old.nodes.diff(data_to_remove_new.nodes);
+    
+      restart(data_to_remove_new,data_to_add);
+
+
+      })
+      // draw legend text
+      legend.append("text")
+      .attr("x", width/4 - 24)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .text(d => { return d;})
+    });
+
+    function is_alone(data){
+      var output=[];
+
+      for (var i=0;i<data.nodes.length;i++){
+        c=1;
+        for (var j=0;j<data.links.length;j++){
+          if (data.nodes[i].id==data.links[j].source_id || data.nodes[i].id==data.links[j].target_id ){
+            c=0;
+          }
+
+        }
+        if (c==1){
+          output.push(data.nodes[i]);
+        }
+      }
+      return output;
+    }
+
+    function format_to_network(data,choice){
+      n=data.length;
+
+      network={"nodes":[],"links":[]}
+      for (var i=0;i<n;i++){
+        actor={};
+
+        if (choice.includes(data[i].nomination[0].award)){
+          actor.name=data[i].name;
+          actor.id=data[i].id;
+          actor.nomination=data[i].nomination[0];
+          network.nodes.push(actor);
+          credtis_i=[];
+          credits_i=data[i].credits.crew.concat(data[i].credits.cast);
+          movies_i=[];
+          for (var j=i+1;j<n;j++){
+            if (choice.includes(data[j].nomination[0].award)){
+              movies_j=[];
+              credits_j= data[j].credits.crew.concat(data[j].credits.cast);
+
+              for (var l=0;l<credits_i.length;l++){
+                for (var m=0;m<credits_j.length;m++){
+                  if (movies_i.includes(credits_i[l].id)==false && movies_j.includes(credits_j[m].id)==false && credits_i[l].id===credits_j[m].id){
+                    link={};
+                    movies_i.push(credits_i[l].id);
+                    movies_j.push(credits_j[m].id);
+                    link.source=data[i].id;
+                    link.target=data[j].id;
+                    link.movie=credits_i[l].original_title;
+                    link.movie_id=credits_i[l].id;
+                    link.id=data[i].id+"_"+data[j].id+"_"+credits_i[l].id;
+                    network.links.push(link);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      return network;
+    }
+
+    function list_award(data){
+      output=[];
+      for (var i=0;i<data.length;i++){
+        if (!output.includes(data[i].nomination[0].award)){
+          output.push(data[i].nomination[0].award);
+        }
+      }
+      return output;
+    }
+
+    Array.prototype.diff = function(a) {
+    return this.filter(function(i) {return a.indexOf(i) < 0;});
+};
+
+    </script>
+  </body>
