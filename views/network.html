@@ -60,7 +60,7 @@
     .enter().append("line")
     .attr("stroke", "grey");
 
-    var color=d3.scaleOrdinal(d3.schemeCategory10);
+    var color=d3.scaleOrdinal(d3.schemeCategory20);
 
     var node = svg.append("g")
     .attr("class", "nodes")
@@ -77,7 +77,7 @@
       tooltip.html(`<p><b>Name : </b>${d.name}</p>`+`<p><b>Film : </b>${d.nomination.movie}</p>`+`<p><b>Nomination : </b>${d.nomination.award}</p>`)
       .style("left", "5px")
       .style("top", "15px");
-
+      name_mouse=d.name;
       d3.selectAll("circle").style("opacity", .1);
 
       d3.select("#_" + d.id).attr("r", 30).style("opacity",1)
@@ -89,14 +89,15 @@
       .filter(function(d) {
         if(d.source.id === touchID || d.target.id === touchID) {
           d3.selectAll("circle").filter(function(f) {
-            if(d.source.id === f.id ||  d.target.id === f.id) {name=f.name;
+            if(d.source.id === f.id ||  d.target.id === f.id) {name_node=f.name;
+              if (name_node!=name_mouse){
               xC=parseFloat(d3.select(this).attr("cx"));
               yC=parseFloat(d3.select(this).attr("cy"));
               id=parseFloat(d3.select(this).attr("id"));
               textDisplay.append("text")
               .attr("x",xC)
               .attr("y",yC)
-              .text(function(f){return name;})
+              .text(function(f){return name;})}
               return true; }
             }).style("opacity", 1);
             xA=parseFloat(d3.select(this).attr("x1"));
@@ -139,23 +140,33 @@
       simulation.force("link")
       .links(network.links);
 
-      function restart() {
-        trackID=network.nodes[10].id
-        network.links = network.links.filter(function(l) {
-          return l.source.id !=trackID &&  l.target.id != trackID;
+      function restart(data_to_remove,data_to_add) {
+        new_network=JSON.parse(JSON.stringify(network));
+        new_network.links = new_network.links.filter(function(l) {
+          return !data_to_remove.links.includes(l.id);
         });
-        network.nodes.splice(10,1);
+        new_network.nodes=new_network.nodes.filter(function(l){
+          return !data_to_remove.nodes.includes(l.id)
+        });
+
+
 
         d3
         .selectAll("circle")
-        .data(network.nodes,function(d){return d.id;})
+        .data(network.nodes.filter(function(l){
+          return !data_to_remove.nodes.includes(l.id)
+        }),function(d){return d.id;})
         .exit().remove();
 
         d3
         .selectAll("line")
-        .data(network.links,function(d){return d.id;})
+        .data(network.links.filter(function(l){
+          return !data_to_remove.links.includes(l.id)
+        }),function(d){return d.id;})
         .exit().remove();
-        simulation.restart();
+
+//Pour le rajout de noeuds, regarder https://bl.ocks.org/colbenkharrl/dcb5590173931bb594e195020aaa959d
+
       }
 
       function ticked () {
@@ -186,7 +197,9 @@
       }
 
       /* init an array in which we want to store nodes we will delete*/
-      var data_to_remove = [];
+      var data_to_remove_old ={"nodes":[],"links":[]};
+      var data_to_remove_new ={"nodes":[],"links":[]};
+      var data_to_add={"nodes":[],"links":[]};
 
       // draw legend
       var legend = svg.selectAll(".legend")
@@ -202,9 +215,37 @@
       .attr("height", 18)
       .style("fill", color)
       .on("click", d => {
-        console.log(d);
-      })
+        data_to_remove_old=JSON.parse(JSON.stringify(data_to_remove_new));
+        for (var i=0;i<network.nodes.length;i++){
+          if (network.nodes[i].nomination.award===d){
+            if (data_to_remove_new.nodes.includes(network.nodes[i].id)){
+              data_to_remove_new.nodes.splice(data_to_remove_new.nodes.indexOf(network.nodes[i].id),1);
+            }
+            else {
+              data_to_remove_new.nodes.push(network.nodes[i].id)
 
+          }
+
+          }
+        }
+        data_to_remove_new.links=[];
+        for (var k=0;k<data_to_remove_new.nodes.length;k++){
+        for (var j=0;j<network.links.length;j++){
+          if(network.links[j].source.id===data_to_remove_new.nodes[k] || network.links[j].target.id===data_to_remove_new.nodes[k]){
+            data_to_remove_new.links.push(network.links[j].id);
+          }
+        }
+      }
+      data_to_add={"nodes":[],"links":[]};
+      data_to_add.links=data_to_remove_old.links.diff(data_to_remove_new.links);
+      data_to_add.nodes=data_to_remove_old.nodes.diff(data_to_remove_new.nodes);
+
+
+
+      restart(data_to_remove_new,data_to_add);
+
+
+      })
       // draw legend text
       legend.append("text")
       .attr("x", width/4 - 24)
@@ -213,6 +254,7 @@
       .style("text-anchor", "end")
       .text(d => { return d;})
     });
+
     function is_alone(data){
       var output=[];
 
@@ -282,6 +324,10 @@
       }
       return output;
     }
+
+    Array.prototype.diff = function(a) {
+    return this.filter(function(i) {return a.indexOf(i) < 0;});
+};
 
     </script>
   </body>
