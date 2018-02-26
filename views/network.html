@@ -141,7 +141,44 @@
       .links(network.links);
 
       function restart(data_to_remove,data_to_add) {
-        new_network=JSON.parse(JSON.stringify(network));
+
+
+        //update nodes (remove or add)
+        node = node.data(network.nodes.filter(function(l){return !data_to_remove.nodes.includes(l.id)}), function(d) { return d.id;});
+        node.exit().remove();
+        var newNode = node.enter().append("circle")
+    		.attr("class", "node")
+    		.attr("r", 8)
+    		.attr("fill", function(d){return color(d.nomination.award)})
+    		.call(d3.drag()
+              .on("start", dragstarted)
+              .on("drag", dragged)
+              .on("end", dragended)
+            )
+    	  node = node.merge(newNode);
+
+        console.log(data_to_remove.nodes);
+
+
+
+        //update links (remove or add)
+         link = link.data(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}), function(d) { return d.id;});
+        link.exit().remove();
+        newLink = link.enter().append("line")
+		      .attr("class", "links")
+          .attr("stroke", "grey");
+        link = link.merge(newLink);
+
+        simulation
+    .nodes(network.nodes.filter(function(l){return !data_to_remove.nodes.includes(l.id)}))
+    .on("tick", ticked);
+
+    simulation.force("link")
+      .links(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}));
+
+    simulation.alpha(1).alphaTarget(0).restart();
+
+    /*   new_network=JSON.parse(JSON.stringify(network));
         new_network.links = new_network.links.filter(function(l) {
           return !data_to_remove.links.includes(l.id);
         });
@@ -165,7 +202,7 @@
         }),function(d){return d.id;})
         .exit().remove();
 
-//Pour le rajout de noeuds, regarder https://bl.ocks.org/colbenkharrl/dcb5590173931bb594e195020aaa959d
+//Pour le rajout de noeuds, regarder https://bl.ocks.org/colbenkharrl/dcb5590173931bb594e195020aaa959d */
 
       }
 
