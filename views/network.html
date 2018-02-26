@@ -114,14 +114,13 @@
         link = link.merge(newLink);
 
         //restart forces
-        simulation
-    .nodes(network.nodes.filter(function(l){return !data_to_remove.nodes.includes(l.id)}))
-    .on("tick", ticked);
 
-    simulation.force("link")
-      .links(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}));
+    simulation.force("link").links(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}));
+    simulation.force("charge", d3.forceCollide().radius(35));
+    simulation.force("center", d3.forceCenter(0,0));
+    simulation.on("tick",ticked);
+    simulation.alpha(0.5).alphaTarget(0).restart();
 
-    simulation.alpha(0.2).alphaTarget(0).restart();
 
       }
 
@@ -227,15 +226,24 @@
       .data(color.domain())
       .enter().append("g")
       .attr("class", "legend")
-      .attr("transform", (d, i) => { return "translate(300," + i * 20 + ")"; });
+      .attr("transform", (d, i) => { return "translate(300," + i * 22 + ")"; });
 
       // draw legend colored rectangles
       legend.append("rect")
       .attr("x", width/4)
       .attr("width", 18)
       .attr("height", 18)
-      .style("fill", color)
-      .on("click", d => {
+      .attr("fill", color)
+      .attr("stroke",color)
+      .attr("stroke-width",2)
+      .style("fill-opacity",1)
+      .on("click",function(d){if (d3.select(this).style("fill-opacity")==1){
+        d3.select(this).style("fill-opacity",0.1)
+      }
+      else{
+        d3.select(this).style("fill-opacity",1)
+      }
+
         for (var i=0;i<network.nodes.length;i++){
           if (network.nodes[i].nomination.award===d){
             if (data_to_remove.nodes.includes(network.nodes[i].id)){
@@ -259,7 +267,8 @@
 
       restart(data_to_remove);
 
-      })
+    })
+  ;
       // draw legend text
       legend.append("text")
       .attr("x", width/4 - 24)
