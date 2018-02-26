@@ -126,14 +126,16 @@
       }
 
       function ticked () {
-        link.attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
+        link.attr("x1", function(d) { return d.source.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.source.x)); })
+        .attr("y1", function(d) { return d.source.y=Math.max(-heigth/2+radius, Math.min(heigth/2 - radius, d.source.y)); })
+        .attr("x2", function(d) { return d.target.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.target.x)); })
+        .attr("y2", function(d) { return d.target.y=Math.max(-heigth/2+radius, Math.min(heigth/2 - radius, d.target.y)); });
 
         node.attr("cx", function (d) { return d.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.x)); })
         .attr("cy", function(d) { return d.y= Math.max(-heigth/2+radius, Math.min(heigth/2 - radius, d.y)); });
       }
+
+
 
       function dragstarted(d) {
         if (!d3.event.active) simulation.alphaTarget(0.1).restart();
