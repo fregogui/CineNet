@@ -50,7 +50,7 @@
     .force("link", d3.forceLink().id(function(d) {return d.id; }).distance(function(d,i){return 1}))
     .force("charge", d3.forceCollide().radius(35))
     //   .force("r", d3.forceRadial(function(d)  {return d.nomination.award === "Best Motion Picture of the Year" ? 50 : 500; }))
-    .force("center", d3.forceCenter(0,0))
+    .force("center", d3.forceCenter(-width/6,0))
     .on("tick",ticked);
 
     var link = svg.append("g")
@@ -117,7 +117,7 @@
 
     simulation.force("link").links(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}));
     simulation.force("charge", d3.forceCollide().radius(35));
-    simulation.force("center", d3.forceCenter(0,0));
+    simulation.force("center", d3.forceCenter(-width/6,0));
     simulation.on("tick",ticked);
     simulation.alpha(0.5).alphaTarget(0).restart();
 
@@ -125,12 +125,12 @@
       }
 
       function ticked () {
-        link.attr("x1", function(d) { return d.source.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.source.x)); })
+        link.attr("x1", function(d) { return d.source.x=Math.max(-width/2+radius, Math.min(width/5 - radius, d.source.x)); })
         .attr("y1", function(d) { return d.source.y=Math.max(-heigth/2+radius, Math.min(heigth/2 - radius, d.source.y)); })
-        .attr("x2", function(d) { return d.target.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.target.x)); })
+        .attr("x2", function(d) { return d.target.x=Math.max(-width/2+radius, Math.min(width/5 - radius, d.target.x)); })
         .attr("y2", function(d) { return d.target.y=Math.max(-heigth/2+radius, Math.min(heigth/2 - radius, d.target.y)); });
 
-        node.attr("cx", function (d) { return d.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.x)); })
+        node.attr("cx", function (d) { return d.x=Math.max(-width/2+radius, Math.min(width/5 - radius, d.x)); })
         .attr("cy", function(d) { return d.y= Math.max(-heigth/2+radius, Math.min(heigth/2 - radius, d.y)); });
       }
 
@@ -156,10 +156,10 @@
       function mouse_on(d){
 
           tooltip.transition()
-          .duration(1000)
+          .duration(500)
           .style("opacity", 0.5);
           tooltip.html(`<p><b>Name : </b>${d.name}</p>`+`<p><b>Film : </b>${d.nomination.movie}</p>`+`<p><b>Nomination : </b>${d.nomination.award}</p>`)
-          .style("left", "5px")
+          .style("right", "5px")
           .style("top", "15px");
           name_mouse=d.name;
           d3.selectAll("circle").style("opacity", .1);
@@ -195,6 +195,7 @@
                 textDisplay.append("text")
                 .attr("x",xT)
                 .attr("y",yT)
+                .attr("pointer-events","none")
                 .text(function(d){return movieT});
 
                 return true;
@@ -226,11 +227,12 @@
       .data(color.domain())
       .enter().append("g")
       .attr("class", "legend")
-      .attr("transform", (d, i) => { return "translate(300," + i * 22 + ")"; });
+      .attr("transform", (d, i) => { return "translate(0," + i * 22 + ")"; });
 
       // draw legend colored rectangles
       legend.append("rect")
-      .attr("x", width/4)
+      .attr("x", width/5)
+      .attr("y",-22*8)
       .attr("width", 18)
       .attr("height", 18)
       .attr("fill", color)
@@ -271,10 +273,10 @@
   ;
       // draw legend text
       legend.append("text")
-      .attr("x", width/4 - 24)
-      .attr("y", 9)
+      .attr("x", width/5 + 26)
+      .attr("y",-22*8+9)
       .attr("dy", ".35em")
-      .style("text-anchor", "end")
+      .style("text-anchor", "left")
       .text(d => { return d;})
     });
 
