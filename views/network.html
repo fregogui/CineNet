@@ -26,7 +26,7 @@
 <body>
   <script>
   var width = 2000,
-  heigth = 1200,
+  heigth = 1000,
   radius=35;
 
 
@@ -70,64 +70,8 @@
     .attr("r", 8)
     .attr("id", function(d) { return "_" + d.id; })
     .attr('fill',function(d){return color(d.nomination.award)})
-    .on("mouseover", d => {
-      tooltip.transition()
-      .duration(1000)
-      .style("opacity", 0.5);
-      tooltip.html(`<p><b>Name : </b>${d.name}</p>`+`<p><b>Film : </b>${d.nomination.movie}</p>`+`<p><b>Nomination : </b>${d.nomination.award}</p>`)
-      .style("left", "5px")
-      .style("top", "15px");
-      name_mouse=d.name;
-      d3.selectAll("circle").style("opacity", .1);
-
-      d3.select("#_" + d.id).attr("r", 30).style("opacity",1)
-      .transition().attr("r", 8);
-      d3.selectAll("line").style("opacity", .1);
-      touchID=d.id;
-      textDisplay=svg.append("g").attr("class", "text_link")
-      svg.selectAll("line")
-      .filter(function(d) {
-        if(d.source.id === touchID || d.target.id === touchID) {
-          d3.selectAll("circle").filter(function(f) {
-            if(d.source.id === f.id ||  d.target.id === f.id) {name_node=f.name;
-              if (name_node!=name_mouse){
-              xC=parseFloat(d3.select(this).attr("cx"));
-              yC=parseFloat(d3.select(this).attr("cy"));
-              id=parseFloat(d3.select(this).attr("id"));
-              textDisplay.append("text")
-              .attr("x",xC)
-              .attr("y",yC)
-              .text(function(f){return name;})}
-              return true; }
-            }).style("opacity", 1);
-            xA=parseFloat(d3.select(this).attr("x1"));
-            xB=parseFloat(d3.select(this).attr("x2"));
-            yA=parseFloat(d3.select(this).attr("y1"));
-            yB=parseFloat(d3.select(this).attr("y2"));
-            xT=xA+(xB-xA)/2.0;
-            yT=yA+(yB-yA)/2.0;
-            movieT=d.movie;
-            theta=(Math.PI / 180.0)*Math.acos(Math.abs(xB-xA)/Math.sqrt((yB-yA)*(yB-yA)+(xB-xA)*(xB-xA))/2.0);
-            textDisplay.append("text")
-            .attr("x",xT)
-            .attr("y",yT)
-            .text(function(d){return movieT});
-
-            return true;
-          }
-        })
-        .style("opacity", 1)
-        .attr("stroke","black");
-      })
-      .on("mouseout", d => {
-        tooltip.transition()
-        .duration(500)
-        .style("opacity", 0);
-
-        d3.selectAll("circle").style("opacity",1).attr("r",8);
-        d3.selectAll("line").style("opacity",1).attr("stroke","grey");
-        svg.selectAll(".text_link").remove();
-      })
+    .on("mouseover", function(d) {return mouse_on(d)})
+    .on("mouseout",function(){return mouse_out()})
       .call(d3.drag()
       .on("start", dragstarted)
       .on("drag", dragged)
@@ -140,7 +84,7 @@
       simulation.force("link")
       .links(network.links);
 
-      function restart(data_to_remove,data_to_add) {
+      function restart(data_to_remove) {
 
 
         //update nodes (remove or add)
@@ -150,14 +94,14 @@
     		.attr("class", "node")
     		.attr("r", 8)
     		.attr("fill", function(d){return color(d.nomination.award)})
+        .on("mouseover", function(d) {return mouse_on(d)})
+        .on("mouseout",function(){return mouse_out()})
     		.call(d3.drag()
               .on("start", dragstarted)
               .on("drag", dragged)
               .on("end", dragended)
             )
     	  node = node.merge(newNode);
-
-        console.log(data_to_remove.nodes);
 
 
 
@@ -169,6 +113,7 @@
           .attr("stroke", "grey");
         link = link.merge(newLink);
 
+        //restart forces
         simulation
     .nodes(network.nodes.filter(function(l){return !data_to_remove.nodes.includes(l.id)}))
     .on("tick", ticked);
@@ -176,33 +121,7 @@
     simulation.force("link")
       .links(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}));
 
-    simulation.alpha(1).alphaTarget(0).restart();
-
-    /*   new_network=JSON.parse(JSON.stringify(network));
-        new_network.links = new_network.links.filter(function(l) {
-          return !data_to_remove.links.includes(l.id);
-        });
-        new_network.nodes=new_network.nodes.filter(function(l){
-          return !data_to_remove.nodes.includes(l.id)
-        });
-
-
-
-        d3
-        .selectAll("circle")
-        .data(network.nodes.filter(function(l){
-          return !data_to_remove.nodes.includes(l.id)
-        }),function(d){return d.id;})
-        .exit().remove();
-
-        d3
-        .selectAll("line")
-        .data(network.links.filter(function(l){
-          return !data_to_remove.links.includes(l.id)
-        }),function(d){return d.id;})
-        .exit().remove();
-
-//Pour le rajout de noeuds, regarder https://bl.ocks.org/colbenkharrl/dcb5590173931bb594e195020aaa959d */
+    simulation.alpha(0.2).alphaTarget(0).restart();
 
       }
 
@@ -233,10 +152,73 @@
         d.fy = null;
       }
 
+      function mouse_on(d){
+
+          tooltip.transition()
+          .duration(1000)
+          .style("opacity", 0.5);
+          tooltip.html(`<p><b>Name : </b>${d.name}</p>`+`<p><b>Film : </b>${d.nomination.movie}</p>`+`<p><b>Nomination : </b>${d.nomination.award}</p>`)
+          .style("left", "5px")
+          .style("top", "15px");
+          name_mouse=d.name;
+          d3.selectAll("circle").style("opacity", .1);
+
+          d3.select("#_" + d.id).attr("r", 30).style("opacity",1)
+          .transition().attr("r", 8);
+          d3.selectAll("line").style("opacity", .1);
+          touchID=d.id;
+          textDisplay=svg.append("g").attr("class", "text_link")
+          svg.selectAll("line")
+          .filter(function(d) {
+            if(d.source.id === touchID || d.target.id === touchID) {
+              d3.selectAll("circle").filter(function(f) {
+                if(d.source.id === f.id ||  d.target.id === f.id) {name_node=f.name;
+                  if (name_node!=name_mouse){
+                  xC=parseFloat(d3.select(this).attr("cx"));
+                  yC=parseFloat(d3.select(this).attr("cy"));
+                  id=parseFloat(d3.select(this).attr("id"));
+                  textDisplay.append("text")
+                  .attr("x",xC)
+                  .attr("y",yC)
+                  .text(function(f){return name;})}
+                  return true; }
+                }).style("opacity", 1);
+                xA=parseFloat(d3.select(this).attr("x1"));
+                xB=parseFloat(d3.select(this).attr("x2"));
+                yA=parseFloat(d3.select(this).attr("y1"));
+                yB=parseFloat(d3.select(this).attr("y2"));
+                xT=xA+(xB-xA)/2.0;
+                yT=yA+(yB-yA)/2.0;
+                movieT=d.movie;
+                theta=(Math.PI / 180.0)*Math.acos(Math.abs(xB-xA)/Math.sqrt((yB-yA)*(yB-yA)+(xB-xA)*(xB-xA))/2.0);
+                textDisplay.append("text")
+                .attr("x",xT)
+                .attr("y",yT)
+                .text(function(d){return movieT});
+
+                return true;
+              }
+            })
+            .style("opacity", 1)
+            .attr("stroke","black");
+          }
+
+        function mouse_out() {
+            tooltip.transition()
+            .duration(500)
+            .style("opacity", 0);
+
+            d3.selectAll("circle").style("opacity",1).attr("r",8);
+            d3.selectAll("line").style("opacity",1).attr("stroke","grey");
+            svg.selectAll(".text_link").remove();
+          }
+
+
+
       /* init an array in which we want to store nodes we will delete*/
-      var data_to_remove_old ={"nodes":[],"links":[]};
-      var data_to_remove_new ={"nodes":[],"links":[]};
-      var data_to_add={"nodes":[],"links":[]};
+
+      var data_to_remove ={"nodes":[],"links":[]};
+
 
       // draw legend
       var legend = svg.selectAll(".legend")
@@ -252,35 +234,28 @@
       .attr("height", 18)
       .style("fill", color)
       .on("click", d => {
-        data_to_remove_old=JSON.parse(JSON.stringify(data_to_remove_new));
         for (var i=0;i<network.nodes.length;i++){
           if (network.nodes[i].nomination.award===d){
-            if (data_to_remove_new.nodes.includes(network.nodes[i].id)){
-              data_to_remove_new.nodes.splice(data_to_remove_new.nodes.indexOf(network.nodes[i].id),1);
+            if (data_to_remove.nodes.includes(network.nodes[i].id)){
+              data_to_remove.nodes.splice(data_to_remove.nodes.indexOf(network.nodes[i].id),1);
             }
             else {
-              data_to_remove_new.nodes.push(network.nodes[i].id)
+              data_to_remove.nodes.push(network.nodes[i].id)
 
           }
 
           }
         }
-        data_to_remove_new.links=[];
-        for (var k=0;k<data_to_remove_new.nodes.length;k++){
+        data_to_remove.links=[];
+        for (var k=0;k<data_to_remove.nodes.length;k++){
         for (var j=0;j<network.links.length;j++){
-          if(network.links[j].source.id===data_to_remove_new.nodes[k] || network.links[j].target.id===data_to_remove_new.nodes[k]){
-            data_to_remove_new.links.push(network.links[j].id);
+          if(network.links[j].source.id===data_to_remove.nodes[k] || network.links[j].target.id===data_to_remove.nodes[k]){
+            data_to_remove.links.push(network.links[j].id);
           }
         }
       }
-      data_to_add={"nodes":[],"links":[]};
-      data_to_add.links=data_to_remove_old.links.diff(data_to_remove_new.links);
-      data_to_add.nodes=data_to_remove_old.nodes.diff(data_to_remove_new.nodes);
 
-
-
-      restart(data_to_remove_new,data_to_add);
-
+      restart(data_to_remove);
 
       })
       // draw legend text
