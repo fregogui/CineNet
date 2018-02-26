@@ -9,7 +9,7 @@
     width: 200px;
     height: 100px;
     pointer-events: none;
-    position: absolute;
+
     text-align: left;
     padding: 5px;
     font: 12px roboto;
@@ -18,27 +18,41 @@
     border: 1px;
     border-radius: 5px;
     color: #ECEFF1;
-    opacity: 0.5;
+    opacity: 0.5;}
+
+    .infos {
+
+
+
+      text-align: left;
+      padding: 5px;
+
+      border: 2px solid black;
+
+      float : right;
+      vertical-align: top;
+
+    }
   }
   </style>
 </head>
 
 <body>
   <script>
-  var width = 2000,
+  var width =1500,
   heigth = 1000,
   radius=35;
+var main_div=d3.select("body").append("div")
+  // add the tooltip area to the webpage
+  var infos=main_div.append("div").attr("class","infos").style("width","29%").style("height","1000px");
+  let tooltip = infos.append("div").attr("class", "tooltip").style("opacity", 0);
 
-
-  var svg = d3.select( "body" )
+  var svg = main_div.append("div").style("width","70%").style("height","1000px")
   .append( "svg" )
   .attr("viewBox", function(){return String(-width/2)+" "+String(-heigth/2)+" "+String(width)+" "+String(heigth)});
 
 
-  // add the tooltip area to the webpage
-  let tooltip = d3.select("body").append("div")
-  .attr("class", "tooltip")
-  .style("opacity", 0);
+
 
   d3.json("/database.json", function(json) {
 
@@ -52,7 +66,7 @@
   //  .force("attract",d3.forceManyBody().strength(20).distanceMax(400).distanceMin(60))
   //  .force("repulse",d3.forceManyBody().strength(-14).distanceMax(50).distanceMin(10))
     //   .force("r", d3.forceRadial(function(d)  {return d.nomination.award === "Best Motion Picture of the Year" ? 50 : 500; }))
-    .force("center", d3.forceCenter(-width/6,0))
+    .force("center", d3.forceCenter(0,0))
     .on("tick",ticked);
 
     var link = svg.append("g")
@@ -126,7 +140,7 @@
 
     simulation.force("link").links(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}));
     simulation.force("charge", d3.forceCollide().radius(55));
-    simulation.force("center", d3.forceCenter(-width/6,0));
+    simulation.force("center", d3.forceCenter(0,0));
     simulation.on("tick",ticked);
     simulation.alpha(1).alphaTarget(0).restart();
 
@@ -134,12 +148,12 @@
       }
 
       function ticked () {
-        link.attr("x1", function(d) { return d.source.x=Math.max(-width/2+radius, Math.min(width/5 - radius, d.source.x)); })
+        link.attr("x1", function(d) { return d.source.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.source.x)); })
         .attr("y1", function(d) { return d.source.y=Math.max(-heigth/2+radius, Math.min(heigth/2 - radius, d.source.y)); })
-        .attr("x2", function(d) { return d.target.x=Math.max(-width/2+radius, Math.min(width/5 - radius, d.target.x)); })
+        .attr("x2", function(d) { return d.target.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.target.x)); })
         .attr("y2", function(d) { return d.target.y=Math.max(-heigth/2+radius, Math.min(heigth/2 - radius, d.target.y)); });
 
-        node.attr("cx", function (d) { return d.x=Math.max(-width/2+radius, Math.min(width/5 - radius, d.x)); })
+        node.attr("cx", function (d) { return d.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.x)); })
         .attr("cy", function(d) { return d.y= Math.max(-heigth/2+radius, Math.min(heigth/2 - radius, d.y)); });
       }
 
@@ -168,7 +182,7 @@
           .duration(500)
           .style("opacity", 0.5);
           tooltip.html(`<p><b>Name : </b>${d.name}</p>`+`<p><b>Film : </b>${d.nomination.movie}</p>`+`<p><b>Nomination : </b>${d.nomination.award}</p>`)
-          .style("right", "5px")
+          .style("left", "5px")
           .style("top", "15px");
           name_mouse=d.name;
           d3.selectAll("circle").style("opacity", .1);
@@ -239,7 +253,7 @@
 
 
       // draw legend
-      var legend = svg.selectAll(".legend")
+      var legend = infos.append("svg").attr("height","100%").selectAll(".legend")
       .data(color.domain())
       .enter().append("g")
       .attr("class", "legend")
@@ -247,15 +261,17 @@
 
       // draw legend colored rectangles
       legend.append("rect")
-      .attr("x", width/5)
-      .attr("y",-22*8)
+      .attr("x", 1)
+      .attr("y",0)
       .attr("width", 18)
       .attr("height", 18)
       .attr("fill", color)
       .attr("stroke",color)
       .attr("stroke-width",2)
       .style("fill-opacity",1)
-      .on("click",function(d){if (d3.select(this).style("fill-opacity")==1){
+      .on("click",function(d){
+        if (d3.select(this).style("fill-opacity")==1){
+        console.log("yo");
         d3.select(this).style("fill-opacity",0.1)
       }
       else{
@@ -289,8 +305,8 @@
   ;
       // draw legend text
       legend.append("text")
-      .attr("x", width/5 + 26)
-      .attr("y",-22*8+9)
+      .attr("x", 25)
+      .attr("y",6)
       .attr("dy", ".35em")
       .style("text-anchor", "left")
       .text(d => { return d;})
