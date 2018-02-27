@@ -18,21 +18,14 @@
     border: 1px;
     border-radius: 5px;
     color: #ECEFF1;
-    opacity: 0.5;}
-
-    .infos {
-
-
-
-      text-align: left;
-      padding: 5px;
-
-      border: 2px solid black;
-
-      float : right;
-      vertical-align: top;
-
-    }
+    opacity: 0.5;
+  }
+  .infos {
+    text-align: left;
+    padding: 5px;
+    border: 2px solid black;
+    float : right;
+    vertical-align: top;
   }
   </style>
 </head>
@@ -42,7 +35,7 @@
   var width =1500,
   heigth = 1000,
   radius=35;
-var main_div=d3.select("body").append("div")
+  var main_div=d3.select("body").append("div")
   // add the tooltip area to the webpage
   var infos=main_div.append("div").attr("class","infos").style("width","29%").style("height","1000px");
   let tooltip = infos.append("div").attr("class", "tooltip").style("opacity", 0);
@@ -50,8 +43,6 @@ var main_div=d3.select("body").append("div")
   var svg = main_div.append("div").style("width","70%").style("height","1000px")
   .append( "svg" )
   .attr("viewBox", function(){return String(-width/2)+" "+String(-heigth/2)+" "+String(width)+" "+String(heigth)});
-
-
 
 
   d3.json("/database.json", function(json) {
@@ -63,8 +54,8 @@ var main_div=d3.select("body").append("div")
     var simulation = d3.forceSimulation()
     .force("link", d3.forceLink().id(function(d) {return d.id; }) .distance(function(d,i){return 1}))
     .force("charge", d3.forceCollide().radius(45))
-  //  .force("attract",d3.forceManyBody().strength(20).distanceMax(400).distanceMin(60))
-  //  .force("repulse",d3.forceManyBody().strength(-14).distanceMax(50).distanceMin(10))
+    //  .force("attract",d3.forceManyBody().strength(20).distanceMax(400).distanceMin(60))
+    //  .force("repulse",d3.forceManyBody().strength(-14).distanceMax(50).distanceMin(10))
     //   .force("r", d3.forceRadial(function(d)  {return d.nomination.award === "Best Motion Picture of the Year" ? 50 : 500; }))
     .force("center", d3.forceCenter(0,0))
     .on("tick",ticked);
@@ -74,14 +65,9 @@ var main_div=d3.select("body").append("div")
     .selectAll("line")
     .data(network.links,function(d){return d.id;})
     .enter()
-  .append("line")
+    .append("line")
     .attr("stroke", "grey")
     .style("pointer-events", "none");
-
-
-
-
-
 
     var color=d3.scaleOrdinal(d3.schemeCategory20);
 
@@ -93,164 +79,155 @@ var main_div=d3.select("body").append("div")
     .attr("r", 12)
     .attr("id", function(d) { return "_" + d.id; })
     .attr('fill',function(d){return color(d.nomination.award)})
-    .on("mouseover", function(d) {return mouse_on(d)})
-    .on("mouseout",function(){return mouse_out()})
+    .attr('stroke', "black")
+    .on("mouseover", mouse_on)
+    .on("mouseout",mouse_out)
+    .call(d3.drag()
+    .on("start", dragstarted)
+    .on("drag", dragged)
+    .on("end", dragended));
+
+    simulation
+    .nodes(network.nodes)
+    .on("tick", ticked);
+
+    simulation.force("link")
+    .links(network.links);
+
+    function restart(data_to_remove) {
+
+      //update nodes (remove or add)
+      node = node.data(network.nodes.filter(function(l){return !data_to_remove.nodes.includes(l.id)}), function(d) { return d.id;});
+      node.exit().remove();
+      var newNode = node.enter().append("circle")
+      .attr("class", "node")
+      .attr("r", 12)
+      .attr("fill", function(d){return color(d.nomination.award)})
+      .on("mouseover", mouse_on)
+      .on("mouseout",mouse_out)
       .call(d3.drag()
       .on("start", dragstarted)
       .on("drag", dragged)
-      .on("end", dragended));
+      .on("end", dragended)
+    )
+    node = node.merge(newNode);
 
-      simulation
-      .nodes(network.nodes)
-      .on("tick", ticked);
+    //update links (remove or add)
+    link = link.data(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}), function(d) { return d.id;});
+    link.exit().remove();
+    newLink = link.enter().append("line")
+    .attr("class", "links")
+    .attr("stroke", "grey");
+    link = link.merge(newLink);
 
-      simulation.force("link")
-      .links(network.links);
-
-      function restart(data_to_remove) {
-
-
-        //update nodes (remove or add)
-        node = node.data(network.nodes.filter(function(l){return !data_to_remove.nodes.includes(l.id)}), function(d) { return d.id;});
-        node.exit().remove();
-        var newNode = node.enter().append("circle")
-    		.attr("class", "node")
-    		.attr("r", 12)
-    		.attr("fill", function(d){return color(d.nomination.award)})
-        .on("mouseover", function(d) {return mouse_on(d)})
-        .on("mouseout",function(){return mouse_out()})
-    		.call(d3.drag()
-              .on("start", dragstarted)
-              .on("drag", dragged)
-              .on("end", dragended)
-            )
-    	  node = node.merge(newNode);
-
-
-
-        //update links (remove or add)
-         link = link.data(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}), function(d) { return d.id;});
-        link.exit().remove();
-        newLink = link.enter().append("line")
-		      .attr("class", "links")
-          .attr("stroke", "grey");
-        link = link.merge(newLink);
-
-        //restart forces
+    //restart forces
 
     simulation.force("link").links(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}));
     simulation.force("charge", d3.forceCollide().radius(55));
     simulation.force("center", d3.forceCenter(0,0));
     simulation.on("tick",ticked);
     simulation.alpha(1).alphaTarget(0).restart();
+  }
+
+  function ticked () {
+    link.attr("x1", function(d) { return d.source.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.source.x)); })
+    .attr("y1", function(d) { return d.source.y=Math.max(-heigth/2+radius, Math.min(heigth/2 - radius, d.source.y)); })
+    .attr("x2", function(d) { return d.target.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.target.x)); })
+    .attr("y2", function(d) { return d.target.y=Math.max(-heigth/2+radius, Math.min(heigth/2 - radius, d.target.y)); });
+
+    node.attr("cx", function (d) { return d.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.x)); })
+    .attr("cy", function(d) { return d.y= Math.max(-heigth/2+radius, Math.min(heigth/2 - radius, d.y)); });
+  }
+
+  function dragstarted(d) {
+    if (!d3.event.active) simulation.alphaTarget(0.1).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+  }
+
+  function dragged(d) {
+    d.fx = d3.event.x;
+    d.fy = d3.event.y;
+  }
+
+  function dragended(d) {
+    if (!d3.event.active) simulation.alphaTarget(0.01);
+    d.fx = null;
+    d.fy = null;
+  }
+
+  function mouse_on(d){
+
+    tooltip.transition()
+    .duration(500)
+    .style("opacity", 0.5);
+    tooltip.html(`<p><b>Name : </b>${d.name}</p>`+`<p><b>Film : </b>${d.nomination.movie}</p>`+`<p><b>Nomination : </b>${d.nomination.award}</p>`)
+    .style("left", "5px")
+    .style("top", "15px");
+    name_mouse=d.name;
+    d3.selectAll("circle").style("opacity", .1);
+
+    d3.select("#_" + d.id).attr("r", 30).style("opacity",1)
+    .transition().attr("r", 12);
+    d3.selectAll("line").style("opacity", .1);
+    touchID=d.id;
+    textDisplay=svg.append("g").attr("class", "text_link")
+
+    //regarder : http://jsfiddle.net/bc4um7pc/  https://stackoverflow.com/questions/20202424/how-to-have-a-text-label-on-links-in-d3-force-directed-graphs
+
+    svg.selectAll("line")
+    .filter(function(d) {
+      if(d.source.id === touchID || d.target.id === touchID) {
+        d3.selectAll("circle").filter(function(f) {
+          if(d.source.id === f.id ||  d.target.id === f.id) {
+            name_node=f.name;
+            if (name_node!=name_mouse) {
+              xC=parseFloat(d3.select(this).attr("cx"));
+              yC=parseFloat(d3.select(this).attr("cy"));
+              id=parseFloat(d3.select(this).attr("id"));
+              textDisplay.append("text")
+              .attr("x",xC)
+              .attr("y",yC)
+              .attr("pointer-events","none")
+              .text(function(f){return name_node;})}
+              return true; }
+            }).style("opacity", 1);
+            xA=parseFloat(d3.select(this).attr("x1"));
+            xB=parseFloat(d3.select(this).attr("x2"));
+            yA=parseFloat(d3.select(this).attr("y1"));
+            yB=parseFloat(d3.select(this).attr("y2"));
+            xT=xA+(xB-xA)/2.0;
+            yT=yA+(yB-yA)/2.0;
+            movieT=d.movie;
+            theta=(180.0/Math.PI)*Math.acos(Math.abs(xB-xA)/Math.sqrt((yB-yA)*(yB-yA)+(xB-xA)*(xB-xA))/2.0);
+            textDisplay.append("text")
+
+            .attr("x",xT)
+            .attr("y",yT)
+
+            .attr("pointer-events","none")
+            .text(function(d){return movieT});
 
 
-      }
-
-      function ticked () {
-        link.attr("x1", function(d) { return d.source.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.source.x)); })
-        .attr("y1", function(d) { return d.source.y=Math.max(-heigth/2+radius, Math.min(heigth/2 - radius, d.source.y)); })
-        .attr("x2", function(d) { return d.target.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.target.x)); })
-        .attr("y2", function(d) { return d.target.y=Math.max(-heigth/2+radius, Math.min(heigth/2 - radius, d.target.y)); });
-
-        node.attr("cx", function (d) { return d.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.x)); })
-        .attr("cy", function(d) { return d.y= Math.max(-heigth/2+radius, Math.min(heigth/2 - radius, d.y)); });
-      }
-
-
-
-      function dragstarted(d) {
-        if (!d3.event.active) simulation.alphaTarget(0.1).restart();
-        d.fx = d.x;
-        d.fy = d.y;
-      }
-
-      function dragged(d) {
-        d.fx = d3.event.x;
-        d.fy = d3.event.y;
-      }
-
-      function dragended(d) {
-        if (!d3.event.active) simulation.alphaTarget(0.01);
-        d.fx = null;
-        d.fy = null;
-      }
-
-      function mouse_on(d){
-
-          tooltip.transition()
-          .duration(500)
-          .style("opacity", 0.5);
-          tooltip.html(`<p><b>Name : </b>${d.name}</p>`+`<p><b>Film : </b>${d.nomination.movie}</p>`+`<p><b>Nomination : </b>${d.nomination.award}</p>`)
-          .style("left", "5px")
-          .style("top", "15px");
-          name_mouse=d.name;
-          d3.selectAll("circle").style("opacity", .1);
-
-          d3.select("#_" + d.id).attr("r", 30).style("opacity",1)
-          .transition().attr("r", 12);
-          d3.selectAll("line").style("opacity", .1);
-          touchID=d.id;
-          textDisplay=svg.append("g").attr("class", "text_link")
-
-//regarder : http://jsfiddle.net/bc4um7pc/  https://stackoverflow.com/questions/20202424/how-to-have-a-text-label-on-links-in-d3-force-directed-graphs
-
-          svg.selectAll("line")
-          .filter(function(d) {
-            if(d.source.id === touchID || d.target.id === touchID) {
-              d3.selectAll("circle").filter(function(f) {
-                if(d.source.id === f.id ||  d.target.id === f.id) {name_node=f.name;
-                  if (name_node!=name_mouse){
-                  xC=parseFloat(d3.select(this).attr("cx"));
-                  yC=parseFloat(d3.select(this).attr("cy"));
-                  id=parseFloat(d3.select(this).attr("id"));
-                  textDisplay.append("text")
-                  .attr("x",xC)
-                  .attr("y",yC)
-                  .attr("pointer-events","none")
-                  .text(function(f){return name_node;})}
-                  return true; }
-                }).style("opacity", 1);
-                xA=parseFloat(d3.select(this).attr("x1"));
-                xB=parseFloat(d3.select(this).attr("x2"));
-                yA=parseFloat(d3.select(this).attr("y1"));
-                yB=parseFloat(d3.select(this).attr("y2"));
-                xT=xA+(xB-xA)/2.0;
-                yT=yA+(yB-yA)/2.0;
-                movieT=d.movie;
-                theta=(180.0/Math.PI)*Math.acos(Math.abs(xB-xA)/Math.sqrt((yB-yA)*(yB-yA)+(xB-xA)*(xB-xA))/2.0);
-                textDisplay.append("text")
-
-                .attr("x",xT)
-                .attr("y",yT)
-
-                .attr("pointer-events","none")
-                .text(function(d){return movieT});
-
-
-                return true;
-              }
-            })
-            .style("opacity", 1)
-            .attr("stroke","black");
+            return true;
           }
+        })
+        .style("opacity", 1);
+      }
 
-        function mouse_out() {
-            tooltip.transition()
-            .duration(500)
-            .style("opacity", 0);
+      function mouse_out() {
+        tooltip.transition()
+        .duration(500)
+        .style("opacity", 0);
 
-            d3.selectAll("circle").style("opacity",1).attr("r",12);
-            d3.selectAll("line").style("opacity",1).attr("stroke","grey");
-            svg.selectAll(".text_link").remove();
-          }
-
-
+        d3.selectAll("circle").style("opacity",1).attr("r",12);
+        d3.selectAll("line").style("opacity",1).attr("stroke","grey");
+        svg.selectAll(".text_link").remove();
+      }
 
       /* init an array in which we want to store nodes we will delete*/
 
       var data_to_remove ={"nodes":[],"links":[]};
-
 
       // draw legend
       var legend = infos.append("svg").attr("height","100%").selectAll(".legend")
@@ -269,15 +246,13 @@ var main_div=d3.select("body").append("div")
       .attr("stroke",color)
       .attr("stroke-width",2)
       .style("fill-opacity",1)
-      .on("click",function(d){
-        if (d3.select(this).style("fill-opacity")==1){
-        console.log("yo");
-        d3.select(this).style("fill-opacity",0.1)
-      }
-      else{
-        d3.select(this).style("fill-opacity",1)
-      }
-
+      .on("click", function(d){
+        if (d3.select(this).style("fill-opacity")==1) {
+          d3.select(this).style("fill-opacity",0.1)
+        }
+        else {
+          d3.select(this).style("fill-opacity",1)
+        }
         for (var i=0;i<network.nodes.length;i++){
           if (network.nodes[i].nomination.award===d){
             if (data_to_remove.nodes.includes(network.nodes[i].id)){
@@ -285,24 +260,23 @@ var main_div=d3.select("body").append("div")
             }
             else {
               data_to_remove.nodes.push(network.nodes[i].id)
-
-          }
-
+            }
           }
         }
         data_to_remove.links=[];
         for (var k=0;k<data_to_remove.nodes.length;k++){
-        for (var j=0;j<network.links.length;j++){
-          if(network.links[j].source.id===data_to_remove.nodes[k] || network.links[j].target.id===data_to_remove.nodes[k]){
-            data_to_remove.links.push(network.links[j].id);
+          for (var j=0;j<network.links.length;j++){
+            if(network.links[j].source.id===data_to_remove.nodes[k] || network.links[j].target.id===data_to_remove.nodes[k]){
+              data_to_remove.links.push(network.links[j].id);
+            }
           }
         }
-      }
+        restart(data_to_remove);
 
-      restart(data_to_remove);
+      })
+      .on("mouseover", mouse_on_legend)
+      .on("mouseout", mouse_out_legend);
 
-    })
-  ;
       // draw legend text
       legend.append("text")
       .attr("x", 25)
@@ -311,24 +285,6 @@ var main_div=d3.select("body").append("div")
       .style("text-anchor", "left")
       .text(d => { return d;})
     });
-
-    function is_alone(data){
-      var output=[];
-
-      for (var i=0;i<data.nodes.length;i++){
-        c=1;
-        for (var j=0;j<data.links.length;j++){
-          if (data.nodes[i].id==data.links[j].source_id || data.nodes[i].id==data.links[j].target_id ){
-            c=0;
-          }
-
-        }
-        if (c==1){
-          output.push(data.nodes[i]);
-        }
-      }
-      return output;
-    }
 
     function format_to_network(data,choice){
       n=data.length;
@@ -372,6 +328,27 @@ var main_div=d3.select("body").append("div")
       return network;
     }
 
+    function mouse_on_legend(d) {
+      award_mouse=d;
+      d3.selectAll("circle").style("opacity", .1);
+      d3.selectAll("line").style("opacity", .1);
+      svg.selectAll("circle")
+      .filter( d => {
+        return d.nomination.award === award_mouse;
+      })
+      .style("opacity", 1);
+      svg.selectAll("line")
+      .filter( d => {
+        return d.source.nomination.award === award_mouse || d.target.nomination.award === award_mouse;
+      })
+      .style("opacity", 1);
+    }
+
+    function mouse_out_legend() {
+      d3.selectAll("circle").style("opacity",1).attr("r",12);
+      d3.selectAll("line").style("opacity",1).attr("stroke","grey");
+    }
+
     function list_award(data){
       output=[];
       for (var i=0;i<data.length;i++){
@@ -383,8 +360,8 @@ var main_div=d3.select("body").append("div")
     }
 
     Array.prototype.diff = function(a) {
-    return this.filter(function(i) {return a.indexOf(i) < 0;});
-};
+      return this.filter(function(i) {return a.indexOf(i) < 0;});
+    };
 
     </script>
   </body>
