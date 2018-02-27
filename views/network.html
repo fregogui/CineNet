@@ -228,6 +228,7 @@
 
       function mouse_on_legend(d) {
         award_mouse=d;
+        textDisplay=svg.append("g").attr("class", "text_link")
       simulation.stop();
         d3.selectAll("circle")
         .transition()
@@ -236,21 +237,39 @@
         .transition()
         .duration(700).style("opacity", .1);
         svg.selectAll("circle")
-        .filter( d => {
-          return d.nomination.award === award_mouse;
-        }).transition()
+        .filter( function(d){
+          if (d.nomination.award === award_mouse){
+
+            xC=parseFloat(d3.select(this).attr("cx"));
+            yC=parseFloat(d3.select(this).attr("cy"));
+            id=parseFloat(d3.select(this).attr("id"));
+            console.log(xC);
+            textDisplay.append("text")
+            .attr("x",xC)
+            .attr("y",yC)
+            .attr("pointer-events","none")
+            .text(function(){return d.name;})
+            .style("opacity",0)
+            .transition()
+            .duration(700)
+            .style("opacity",1);
+            return true;
+          };
+        })
+        .transition()
         .duration(700)
         .style("opacity", 1);
 
-    textDisplay=svg.append("g").attr("class", "text_link")
+
+
 
         svg.selectAll("line")
         .filter(function(d) {
           if(d.source.nomination.award === award_mouse || d.target.nomination.award === award_mouse) {
             d3.selectAll("circle").filter(function(f) {
               if(d.source.id === f.id ||  d.target.id === f.id) {
-                award_name=f.name;
-                if (award_name!=award_mouse) {
+
+                if (f.nomination.award!=award_mouse) {
                   xC=parseFloat(d3.select(this).attr("cx"));
                   yC=parseFloat(d3.select(this).attr("cy"));
                   id=parseFloat(d3.select(this).attr("id"));
@@ -258,7 +277,11 @@
                   .attr("x",xC)
                   .attr("y",yC)
                   .attr("pointer-events","none")
-                  .text(function(f){return award_name;});
+                  .text(function(){return f.name;})
+                  .style("opacity",0)
+                  .transition()
+                  .duration(700)
+                  .style("opacity",1);
                   return true;
                 }}}).transition()
                 .duration(700).style("opacity", 1);
