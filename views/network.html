@@ -52,7 +52,7 @@
 
     //repartition démelage
     var simulation = d3.forceSimulation()
-    .force("link", d3.forceLink().id(function(d) {return d.id; }) .distance(function(d,i){return 1}))
+    .force("link", d3.forceLink().id(function(d) {return d.id; }) .distance(function(d,i){return 5*i}))
     .force("charge", d3.forceCollide().radius(45))
     //  .force("attract",d3.forceManyBody().strength(20).distanceMax(400).distanceMin(60))
     //  .force("repulse",d3.forceManyBody().strength(-14).distanceMax(50).distanceMin(10))
@@ -169,7 +169,7 @@
 
     d3.select("#_" + d.id).attr("r", 30).style("opacity",1)
     .transition().attr("r", 12);
-    d3.selectAll("line").style("opacity", .1);
+    d3.selectAll("line").style("opacity", .05);
     touchID=d.id;
     textDisplay=svg.append("g").attr("class", "text_link")
 
@@ -212,6 +212,7 @@
             return true;
           }
         })
+        .attr("stroke","black")
         .style("opacity", 1);
       }
 
