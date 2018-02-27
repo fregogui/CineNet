@@ -157,7 +157,7 @@
   }
 
   function mouse_on(d){
-
+    simulation.stop();
     tooltip.transition()
     .duration(500)
     .style("opacity", 0.5);
@@ -223,6 +223,65 @@
         d3.selectAll("circle").style("opacity",1).attr("r",12);
         d3.selectAll("line").style("opacity",1).attr("stroke","grey");
         svg.selectAll(".text_link").remove();
+        simulation.restart();
+      }
+
+      function mouse_on_legend(d) {
+        award_mouse=d;
+      simulation.stop();
+        d3.selectAll("circle")
+        .transition()
+        .duration(700).style("opacity", .1);
+        d3.selectAll("line")
+        .transition()
+        .duration(700).style("opacity", .1);
+        svg.selectAll("circle")
+        .filter( d => {
+          return d.nomination.award === award_mouse;
+        }).transition()
+        .duration(700)
+        .style("opacity", 1);
+
+    textDisplay=svg.append("g").attr("class", "text_link")
+
+        svg.selectAll("line")
+        .filter(function(d) {
+          if(d.source.nomination.award === award_mouse || d.target.nomination.award === award_mouse) {
+            d3.selectAll("circle").filter(function(f) {
+              if(d.source.id === f.id ||  d.target.id === f.id) {
+                award_name=f.name;
+                if (award_name!=award_mouse) {
+                  xC=parseFloat(d3.select(this).attr("cx"));
+                  yC=parseFloat(d3.select(this).attr("cy"));
+                  id=parseFloat(d3.select(this).attr("id"));
+                  textDisplay.append("text")
+                  .attr("x",xC)
+                  .attr("y",yC)
+                  .attr("pointer-events","none")
+                  .text(function(f){return award_name;});
+                  return true;
+                }}}).transition()
+                .duration(700).style("opacity", 1);
+
+                return true;
+              }})
+            .transition()
+            .duration(700)
+            .style("opacity", 1);
+
+
+
+
+
+      }
+
+      function mouse_out_legend() {
+        d3.selectAll("circle").transition()
+        .duration(700).style("opacity",1).attr("r",12);
+        d3.selectAll("line").transition()
+        .duration(700).style("opacity",1).attr("stroke","grey");
+        svg.selectAll(".text_link").remove();
+        simulation.restart();
       }
 
       /* init an array in which we want to store nodes we will delete*/
@@ -328,26 +387,7 @@
       return network;
     }
 
-    function mouse_on_legend(d) {
-      award_mouse=d;
-      d3.selectAll("circle").style("opacity", .1);
-      d3.selectAll("line").style("opacity", .1);
-      svg.selectAll("circle")
-      .filter( d => {
-        return d.nomination.award === award_mouse;
-      })
-      .style("opacity", 1);
-      svg.selectAll("line")
-      .filter( d => {
-        return d.source.nomination.award === award_mouse || d.target.nomination.award === award_mouse;
-      })
-      .style("opacity", 1);
-    }
 
-    function mouse_out_legend() {
-      d3.selectAll("circle").style("opacity",1).attr("r",12);
-      d3.selectAll("line").style("opacity",1).attr("stroke","grey");
-    }
 
     function list_award(data){
       output=[];
