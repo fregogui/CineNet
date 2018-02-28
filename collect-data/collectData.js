@@ -89,8 +89,6 @@ fs.readFile('./data/nominees.txt', 'latin1', (err, data) => {
 
 		async.eachSeries(nominees, (nominee, asyncIterator) => {
 
-			console.log(nominee);
-
 			setTimeout( () => {
 
 				let request = {
