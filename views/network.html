@@ -106,6 +106,7 @@
 
     // add the curved links to our graphic
     var link = svg.append("g").attr("class","links").selectAll(".link")
+
     .data(links, function(d){
       return d.id;
     })
@@ -159,7 +160,6 @@
 
 
     function restart(data_to_remove) {
-
       //update nodes (remove or add)
       node = node.data(network.nodes.filter(function(l){return !data_to_remove.nodes.includes(l.id)}), function(d) { return d.id;});
       node.exit().remove();
@@ -181,12 +181,18 @@
       node = node.merge(newNode);
 
       //update links (remove or add)
+
       link = link.data(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}), function(d) { return d.id;});
       link.exit().remove();
-      newLink = link.enter().append("line")
-      .attr("class", "links")
-      .attr("stroke", "black");
+      newLink = link.enter()
+        .append("path")
+        .attr("class", "link")
+      .style("stroke","grey")
+      .style("stroke-width","0.7")
+      .style("pointer-events", "none");
+      ;
       link = link.merge(newLink);
+
 
       //restart forces
 
@@ -293,6 +299,7 @@
       }
 
       function mouse_on_legend(d) {
+        if(d3.select(this).style("fill-opacity")==1){
         award_mouse=d;
         textDisplay=svg.append("g").attr("class", "text_link")
         simulation.stop();
@@ -364,7 +371,7 @@
         .style("stroke-width","1")
         .style("opacity", 1);
       }
-
+}
       function mouse_out_legend() {
         d3.selectAll("circle").transition()
         .duration(transition).style("opacity",1).attr("r",r);
@@ -378,8 +385,58 @@
 
       var data_to_remove ={"nodes":[],"links":[]};
 
+      var all=infos.append("svg").attr("height","5%");
+
+      all.append("rect")
+      .attr("x", 1)
+      .attr("y",1)
+      .attr("width", 18)
+      .attr("height", 18)
+      .attr("fill", 'black')
+      .attr("stroke",'black')
+      .attr("stroke-width",2)
+      .style("fill-opacity",1)
+      .on("click", function(d){
+        if (d3.select(this).style("fill-opacity")==1) {
+
+          d3.selectAll("rect").style("fill-opacity",0.1);
+          for (var i=0;i<network.nodes.length;i++){
+            data_to_remove.nodes.push(network.nodes[i].id)
+              }
+
+              data_to_remove.links=[];
+              for (var k=0;k<data_to_remove.nodes.length;k++){
+                for (var j=0;j<network.links.length;j++){
+                  if(network.links[j].source.id===data_to_remove.nodes[k] || network.links[j].target.id===data_to_remove.nodes[k]){
+                    data_to_remove.links.push(network.links[j].id);
+                  }
+                }
+              }
+        /*  for (var j=0;j<network.links.length-10;j++){
+            data_to_remove.links.push(network.links[i].id)
+          }*/
+            }
+
+        else {
+          data_to_remove ={"nodes":[],"links":[]};
+          d3.selectAll("rect").style("fill-opacity",1);
+
+        }
+
+
+        restart(data_to_remove);
+
+      });
+
+      all.append("text")
+      .attr("x", 25)
+      .attr("y",10)
+      .attr("dy", ".35em")
+      .style("text-anchor", "left")
+      .text("All")
+
       // draw legend
-      var legend = infos.append("svg").attr("height","100%").selectAll(".legend")
+      var legend = infos.append("svg").attr("height","45%").selectAll(".legend")
       .data(color.domain())
       .enter().append("g")
       .attr("class", "legend")
@@ -420,6 +477,7 @@
             }
           }
         }
+
         restart(data_to_remove);
 
       })
@@ -434,6 +492,8 @@
       .style("text-anchor", "left")
       .text(d => { return d;})
     });
+
+
 
     function format_to_network(data,choice){
       n=data.length;
