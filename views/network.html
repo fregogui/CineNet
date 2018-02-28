@@ -45,31 +45,25 @@
 <body>
   <script>
   var width =1000,
-  height = 1000,
+  height = 700,
   radius=35;
-  var margin = {
-    top: 50,
-    bottom: 50,
-    left: 50,
-    right: 50,
-  };
+  var margin = 50;
+
 
   var main_div=d3.select("body").append("div");
   // create an svg to draw in
-  var svg = main_div
+  var svg = main_div.append("div").attr("class","chart").style("width","70%").style("height","1000px")
   .append("svg")
-  .attr("width", width)
-  .attr("height", height)
-  .append('g')
-  .attr('transform', 'translate(' + margin.top + ',' + margin.left + ')');
+  .attr("viewBox", function(){return String(-width/2)+" "+String(-height/2)+" "+String(width)+" "+String(height)})
+  //.append('g')
+  //.attr('transform', 'translate(' + margin.top + ',' + margin.left + ')');
+
 
   // add the tooltip area to the webpage
   var infos=main_div.append("div").attr("class","infos").style("width","29%").style("height","1000px");
   let tooltip = infos.append("div").attr("class", "tooltip").style("opacity", 0);
 
-  width = width - margin.left - margin.right;
-  height = height - margin.top - margin.bottom;
-  var simulation = d3.forceSimulation()
+  /*
   // pull nodes together based on the links between them
   .force("link", d3.forceLink().id(function(d) {
     return d.id;
@@ -80,14 +74,17 @@
   // add some collision detection so they don't overlap
   .force("collide", d3.forceCollide().radius(12))
   // and draw them around the centre of the space
-  .force("center", d3.forceCenter(width / 2, height / 2));
+  .force("center", d3.forceCenter(0,0));
+*/
+
+  //repartition démelage
+  var simulation = d3.forceSimulation()
+  .force("link", d3.forceLink().id(function(d) {return d.id; }).strength(0.025))//.distance(function(){return 1}).strength(1))
+  .force("charge", d3.forceCollide().radius(45))
+//     .force("r", d3.forceRadial(function(d)  {return (19-color.domain().indexOf(d.nomination.award))*50;}))
+  .force("center", d3.forceCenter(0,0))
 
   var color=d3.scaleOrdinal(d3.schemeCategory20);
-
-  // var svg = main_div.append("div").style("width","70%").style("height","1000px")
-  // .append( "svg" )
-  // .attr("viewBox", function(){return String(-width/2)+" "+String(-heigth/2)+" "+String(width)+" "+String(heigth)});
-
 
   d3.json("/database.json", function(json) {
 
@@ -99,18 +96,10 @@
     // links between nodes
     var links = network.links;
 
-    //repartition démelage
-    // var simulation = d3.forceSimulation()
-    // .force("link", d3.forceLink().id(function(d) {return d.id; }) .distance(function(d,i){return 1}))
-    // .force("charge", d3.forceCollide().radius(45))
-    //  .force("attract",d3.forceManyBody().strength(20).distanceMax(400).distanceMin(60))
-    //  .force("repulse",d3.forceManyBody().strength(-14).distanceMax(50).distanceMin(10))
-    //   .force("r", d3.forceRadial(function(d)  {return d.nomination.award === "Best Motion Picture of the Year" ? 50 : 500; }))
-    //.force("center", d3.forceCenter(0,0))
-    //.on("tick",ticked);
+
 
     // add the curved links to our graphic
-    var link = svg.selectAll(".link")
+    var link = svg.append("g").attr("class","links").selectAll(".link")
     .data(links, function(d){
       return d.id;
     })
@@ -119,25 +108,16 @@
     .attr("class", "link")
     .attr("stroke", function(d){
       return "#ddd";
-    });
+    })
+    .style("pointer-events", "none");
 
-    // var link = svg.append("g")
-    // .attr("class", "links")
-    // .selectAll("line")
-    // .data(network.links,function(d){return d.id;})
-    // .enter()
-    // .append("line")
-    // .attr("stroke", "grey")
-    // .style("pointer-events", "none");
 
     // add the nodes to the graphic
-    var node = svg.selectAll(".node")
+    var node = svg.append("g").attr("class","nodes").selectAll(".node")
     .data(nodes, function(d){
       return d.id;
     })
-    .enter().append("g")
-    // a circle to represent the node
-    node.append("circle")
+    .enter().append("circle")
     .attr("class", "node")
     .attr("r", 12)
     .attr("id", function(d) { return "_" + d.id; })
@@ -152,21 +132,7 @@
     .on("drag", dragged)
     .on("end", dragended));
 
-    // var node = svg.append("g")
-    // .attr("class", "nodes")
-    // .selectAll("circle")
-    // .data(network.nodes,function(d){return d.id;})
-    // .enter().append("circle")
-    // .attr("r", 12)
-    // .attr("id", function(d) { return "_" + d.id; })
-    // .attr('fill',function(d){return color(d.nomination.award)})
-    // .attr('stroke', "black")
-    // .on("mouseover", mouse_on)
-    // .on("mouseout",mouse_out)
-    // .call(d3.drag()
-    // .on("start", dragstarted)
-    // .on("drag", dragged)
-    // .on("end", dragended));
+
 
     // add the nodes to the simulation and
     // tell it what to do on each tick
@@ -193,27 +159,32 @@
       var normalise = Math.sqrt((dx * dx) + (dy * dy));
       var offSetX = midpoint_x + offset*(dy/normalise);
       var offSetY = midpoint_y - offset*(dx/normalise);
-      return "M" + d.source.x + "," + d.source.y +
+      var source_x=Math.max(-width/2+margin, Math.min(width/2 - margin, d.source.x));
+      var source_y=Math.max(-height/2+margin, Math.min(height/2 - margin, d.source.y));
+      var target_x=Math.max(-width/2+margin, Math.min(width/2 - margin, d.target.x));
+      var target_y=Math.max(-height/2+margin, Math.min(height/2 - margin, d.target.y))
+      return "M" + source_x + "," + source_y +
       "S" + offSetX + "," + offSetY +
-      " " + d.target.x + "," + d.target.y;
+      " " + target_x + "," + target_y;
     }
     // move the node based on forces calculations
     function positionNode(d) {
       // keep the node within the boundaries of the svg
-      if (d.x < 0) {
-        d.x = 0
-      };
-      if (d.y < 0) {
-        d.y = 0
-      };
-      if (d.x > width) {
-        d.x = width
-      };
-      if (d.y > height) {
-        d.y = height
-      };
-      return "translate(" + d.x + "," + d.y + ")";
+
+      node.attr("cx", function (d) { return d.x=Math.max(-width/2+margin, Math.min(width/2 - margin, d.x)); })
+         .attr("cy", function(d) { return d.y= Math.max(-height/2+margin, Math.min(height/2 - margin, d.y)); });
     }
+
+    // function ticked () {
+    //   link.attr("x1", function(d) { return d.source.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.source.x)); })
+    //   .attr("y1", function(d) { return d.source.y=Math.max(-height/2+radius, Math.min(height/2 - radius, d.source.y)); })
+    //   .attr("x2", function(d) { return d.target.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.target.x)); })
+    //   .attr("y2", function(d) { return d.target.y=Math.max(-height/2+radius, Math.min(height/2 - radius, d.target.y)); });
+    //
+    //   node.attr("cx", function (d) { return d.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.x)); })
+    //   .attr("cy", function(d) { return d.y= Math.max(-height/2+radius, Math.min(height/2 - radius, d.y)); });
+    // }
+
 
     function restart(data_to_remove) {
 
@@ -254,15 +225,7 @@
       simulation.alpha(1).alphaTarget(0).restart();
     }
 
-    // function ticked () {
-    //   link.attr("x1", function(d) { return d.source.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.source.x)); })
-    //   .attr("y1", function(d) { return d.source.y=Math.max(-heigth/2+radius, Math.min(heigth/2 - radius, d.source.y)); })
-    //   .attr("x2", function(d) { return d.target.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.target.x)); })
-    //   .attr("y2", function(d) { return d.target.y=Math.max(-heigth/2+radius, Math.min(heigth/2 - radius, d.target.y)); });
-    //
-    //   node.attr("cx", function (d) { return d.x=Math.max(-width/2+radius, Math.min(width/2 - radius, d.x)); })
-    //   .attr("cy", function(d) { return d.y= Math.max(-heigth/2+radius, Math.min(heigth/2 - radius, d.y)); });
-    // }
+
 
     function dragstarted(d) {
       if (!d3.event.active) simulation.alphaTarget(0.1).restart();
@@ -337,8 +300,8 @@
             return true;
           }
         })
-        .attr("stroke","black")
-        .attr("stroke-width",3)
+
+
         .style("opacity", 1);
       }
 
@@ -421,8 +384,6 @@
         })
         .transition()
         .duration(700)
-        .attr("stroke","black")
-        .attr("stroke-width",3)        
         .style("opacity", 1);
       }
 
