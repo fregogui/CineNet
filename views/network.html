@@ -52,11 +52,14 @@
 
     //repartition démelage
     var simulation = d3.forceSimulation()
-    .force("link", d3.forceLink().id(function(d) {return d.id; }) .distance(function(d,i){return 5*i}))
-    .force("charge", d3.forceCollide().radius(45))
+    .force("link", d3.forceLink().id(function(d) {return d.id; }).distance(function(){return 100}).strength(1))
+    .force("charge", d3.forceCollide().radius(55))
+  //  .force("x",d3.forceX(function(d){if(d.nomination.award === "Best Motion Picture of the Year"){return 1000; }else{return 0;}}))
+    //.force("charge2", d3.forceManyBody())
     //  .force("attract",d3.forceManyBody().strength(20).distanceMax(400).distanceMin(60))
     //  .force("repulse",d3.forceManyBody().strength(-14).distanceMax(50).distanceMin(10))
-    //   .force("r", d3.forceRadial(function(d)  {return d.nomination.award === "Best Motion Picture of the Year" ? 50 : 500; }))
+    //   .force("r", d3.forceRadial(function(d)  {return d.nomination.award === "Best Motion Picture of the Year" ? 500 : 0; }))
+       .force("r", d3.forceRadial(function(d)  {return (19-color.domain().indexOf(d.nomination.award))*50;}))
     .force("center", d3.forceCenter(0,0))
     .on("tick",ticked);
 
@@ -213,6 +216,7 @@
           }
         })
         .attr("stroke","black")
+        .attr("stroke-width",3)
         .style("opacity", 1);
       }
 
@@ -222,7 +226,7 @@
         .style("opacity", 0);
 
         d3.selectAll("circle").style("opacity",1).attr("r",12);
-        d3.selectAll("line").style("opacity",1).attr("stroke","grey");
+        d3.selectAll("line").style("opacity",1).attr("stroke","grey").attr("stroke-width",1);
         svg.selectAll(".text_link").remove();
         simulation.restart();
       }
@@ -244,7 +248,7 @@
             xC=parseFloat(d3.select(this).attr("cx"));
             yC=parseFloat(d3.select(this).attr("cy"));
             id=parseFloat(d3.select(this).attr("id"));
-            console.log(xC);
+
             textDisplay.append("text")
             .attr("x",xC)
             .attr("y",yC)
@@ -259,7 +263,9 @@
         })
         .transition()
         .duration(700)
+
         .style("opacity", 1);
+
 
 
 
@@ -291,6 +297,9 @@
               }})
             .transition()
             .duration(700)
+            .attr("stroke","black")
+            .attr("stroke-width",3)
+
             .style("opacity", 1);
 
 
@@ -303,7 +312,7 @@
         d3.selectAll("circle").transition()
         .duration(700).style("opacity",1).attr("r",12);
         d3.selectAll("line").transition()
-        .duration(700).style("opacity",1).attr("stroke","grey");
+        .duration(700).style("opacity",1).attr("stroke","grey").attr("stroke-width",1);
         svg.selectAll(".text_link").remove();
         simulation.restart();
       }
