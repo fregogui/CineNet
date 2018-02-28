@@ -68,7 +68,7 @@
   //repartition démelage
   var simulation = d3.forceSimulation()
   .force("link", d3.forceLink().id(function(d) {return d.id; }).strength(0.025))//.distance(function(){return 1}).strength(1))
-  .force("charge", d3.forceCollide().radius(45))
+  .force("charge", d3.forceCollide().radius(35))
 //     .force("r", d3.forceRadial(function(d)  {return (19-color.domain().indexOf(d.nomination.award))*50;}))
   .force("center", d3.forceCenter(0,0))
 
@@ -195,11 +195,13 @@
 
       //restart forces
 
+
+
       simulation.force("link").links(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}));
-      simulation.force("charge", d3.forceCollide().radius(55));
+      simulation.force("charge", d3.forceCollide().radius(45));
       simulation.force("center", d3.forceCenter(0,0));
-      simulation.on("tick",ticked);
-      simulation.alpha(1).alphaTarget(0).restart();
+      //simulation.on("tick",ticked);
+      simulation.alpha(0.5).alphaTarget(0).restart();
     }
 
 
@@ -367,7 +369,7 @@
       function mouse_out_legend() {
         d3.selectAll("circle").transition()
         .duration(700).style("opacity",1).attr("r",12);
-        d3.selectAll("line").transition()
+        d3.selectAll(".link").transition()
         .duration(700).style("opacity",1).attr("stroke","grey").attr("stroke-width",1);
         svg.selectAll(".text_link").remove();
         simulation.restart();
