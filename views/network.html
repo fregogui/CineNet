@@ -59,18 +59,13 @@
   // create an svg to draw in
   var svg = main_div.append("div").attr("class","chart").style("width","70%").style("height","1000px")
   .append("svg")
-  .attr("viewBox", function(){return String(-width/2)+" "+String(-height/2)+" "+String(width)+" "+String(height)})
-
-
-
-
-
+  .attr("viewBox", function(){return String(-width/2)+" "+String(-height/2)+" "+String(width)+" "+String(height)});
 
   //repartition démelage
   var simulation = d3.forceSimulation()
   .force("link", d3.forceLink().id(function(d) {return d.id; }).strength(0.025))//.distance(function(){return 1}).strength(1))
   .force("charge", d3.forceCollide().radius(35))
-//     .force("r", d3.forceRadial(function(d)  {return (19-color.domain().indexOf(d.nomination.award))*50;}))
+  //.force("r", d3.forceRadial(function(d)  {return (19-color.domain().indexOf(d.nomination.award))*50;}))
   .force("center", d3.forceCenter(0,0))
 
   var color=d3.scaleOrdinal(d3.schemeCategory20);
@@ -84,7 +79,6 @@
     var nodes = network.nodes;
     // links between nodes
     var links = network.links;
-
 
     // add the nodes to the simulation and
     // tell it what to do on each tick
@@ -100,35 +94,42 @@
     function ticked() {
       link.attr("d", positionLink);
 
-      node.attr("cx", function (d) { return d.x=Math.max(-width/2+margin, Math.min(width/2 - margin, d.x)); })
-         .attr("cy", function(d) { return d.y= Math.max(-height/2+margin, Math.min(height/2 - margin, d.y)); });
+      node.attr("cx", function (d) {
+        return d.x=Math.max(-width/2+margin, Math.min(width/2 - margin, d.x));
+      })
+      .attr("cy", function(d) {
+        return d.y= Math.max(-height/2+margin, Math.min(height/2 - margin, d.y));
+      });
     }
 
     // add the curved links to our graphic
     var link = svg.append("g").attr("class","links").selectAll(".link")
-
-    .data(links, function(d){return d.id;})
+    .data(links, function(d){
+      return d.id;
+    })
     .enter()
     .append("path")
     .attr("class", "link")
-    .attr("id",function(d) { return d.id; })
+    .attr("id",function(d) {
+      return d.id;
+    })
     .style("stroke","grey")
     .style("stroke-width","0.7")
     .style("pointer-events", "none");
-/*
+    /*
     var linktext = svg.append("g").selectAll(".linkname")
     .data(links, function(d){return d.id;});
 
-   linktext.enter().append("g")
+    linktext.enter().append("g")
     .append("text")
     .attr("class", "linklabel")
-  .style("font-size", "13px")
+    .style("font-size", "13px")
     .attr("x", "50")
-  .attr("y", "-20")
+    .attr("y", "-20")
     .attr("text-anchor", "start")
     .style("fill","#000")
-  .append("textPath")
-   .attr("xlink:href",function(d,i) { return "#" + d.id;})
+    .append("textPath")
+    .attr("xlink:href",function(d,i) { return "#" + d.id;})
     .text(function(d){return d.movie;});*/
 
     // add the nodes to the graphic
@@ -170,8 +171,6 @@
       " " + target_x + "," + target_y;
     }
 
-
-
     function restart(data_to_remove) {
       //update nodes (remove or add)
       node = node.data(network.nodes.filter(function(l){return !data_to_remove.nodes.includes(l.id)}), function(d) { return d.id;});
@@ -198,27 +197,21 @@
       link = link.data(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}), function(d) { return d.id;});
       link.exit().remove();
       newLink = link.enter()
-        .append("path")
-        .attr("class", "link")
+      .append("path")
+      .attr("class", "link")
       .style("stroke","grey")
       .style("stroke-width","0.7")
       .style("pointer-events", "none");
       ;
       link = link.merge(newLink);
 
-
       //restart forces
-
-
-
       simulation.force("link").links(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}));
       simulation.force("charge", d3.forceCollide().radius(45));
       simulation.force("center", d3.forceCenter(0,0));
       //simulation.on("tick",ticked);
       simulation.alpha(0.5).alphaTarget(0).restart();
     }
-
-
 
     function dragstarted(d) {
       if (!d3.event.active) simulation.alphaTarget(0.3).restart();
@@ -254,9 +247,7 @@
       touchID=d.id;
       textDisplay=svg.append("g").attr("class", "nodetext");
       linktext = svg.append("g").attr('class',"linktext").selectAll(".linkname")
-      .data(links
-        .filter(function(d){return d.source.id === touchID || d.target.id === touchID}), function(d){return d.id;});
-
+      .data(links.filter(function(d){return d.source.id === touchID || d.target.id === touchID}), function(d){return d.id;});
 
       //regarder : http://jsfiddle.net/bc4um7pc/  https://stackoverflow.com/questions/20202424/how-to-have-a-text-label-on-links-in-d3-force-directed-graphs
 
@@ -274,69 +265,67 @@
                 .attr("x",xC)
                 .attr("y",yC)
                 .attr("pointer-events","none")
-                .text(function(f){return name_node;})}
-                return true;
+                .text(function(f){return name_node;})
               }
-            })
+              return true;
+            }
+          })
+          .style("opacity", 1);
 
-            .style("opacity", 1);
-
-            path=(d3.select(this).attr("d")).split(",");
-
-            xA=parseFloat(path[0].split("M")[1]);
-            xB=parseFloat(path[2].split(" ")[1]);
-            yA=parseFloat(path[1].split("S")[0]);
-            yB=parseFloat(path[3]);
-            xT=xA+(xB-xA)/2.0;
-            yT=yA+(yB-yA)/2.0;
-            movieT=d.movie;
-            theta=(180.0/Math.PI)*Math.acos(Math.abs(xB-xA)/Math.sqrt((yB-yA)*(yB-yA)+(xB-xA)*(xB-xA))/2.0);
-            linktext.enter().append("g")
-             .append("text")
-             .attr("class", "linklabel")
-            .style("font-size", "13px")
-             .attr("x", "50")
-            .attr("y", "-20")
-             .attr("text-anchor", "start")
-             .style("fill","#000")
-            .append("textPath")
-            .attr("xlink:href",function(d,i) { return "#" + d.id;})
-             .text(function(d){return d.movie;})
-             .style("pointer-events","none");
-
-
-
-
+          path=(d3.select(this).attr("d")).split(",");
+          xA=parseFloat(path[0].split("M")[1]);
+          xB=parseFloat(path[2].split(" ")[1]);
+          yA=parseFloat(path[1].split("S")[0]);
+          yB=parseFloat(path[3]);
+          xT=xA+(xB-xA)/2.0;
+          yT=yA+(yB-yA)/2.0;
+          movieT=d.movie;
+          theta=(180.0/Math.PI)*Math.acos(Math.abs(xB-xA)/Math.sqrt((yB-yA)*(yB-yA)+(xB-xA)*(xB-xA))/2.0);
+          linktext.enter().append("g")
+          .append("text")
+          .attr("class", "linklabel")
+          .style("font-size", "13px")
+          .attr("x", "50")
+          .attr("y", "-20")
+          .attr("text-anchor", "start")
+          .style("fill","#000")
+          .append("textPath")
+          .attr("xlink:href",function(d) {
+            return "#" + d.id;
+          })
+          .text(function(d){
+            return d.movie;
+          })
+          .style("pointer-events","none");
           /*  textDisplay.append("text")
 
-            .attr("x",xT)
-            .attr("y",yT)
+          .attr("x",xT)
+          .attr("y",yT)
 
-            .attr("pointer-events","none")
-            .text(function(d){return movieT});*/
-            return true;
-          }
-        }).style("stroke","black")
-        .style("stroke-width","3")
+          .attr("pointer-events","none")
+          .text(function(d){return movieT});*/
+          return true;
+        }
+      })
+      .style("stroke","black")
+      .style("stroke-width","3")
+      .style("opacity", 1);
+    }
 
+    function mouse_out() {
+      tooltip.transition()
+      .duration(transition)
+      .style("opacity", 0);
 
-        .style("opacity", 1);
-      }
+      d3.selectAll("circle").style("opacity",1).attr("r",r);
+      d3.selectAll(".link").style("opacity",1).style("stroke","grey").style("stroke-width","0.7");
+      svg.selectAll(".nodetext").remove();
+      svg.selectAll(".linktext").remove();
+      simulation.restart();
+    }
 
-      function mouse_out() {
-        tooltip.transition()
-        .duration(transition)
-        .style("opacity", 0);
-
-        d3.selectAll("circle").style("opacity",1).attr("r",r);
-        d3.selectAll(".link").style("opacity",1).style("stroke","grey").style("stroke-width","0.7");
-        svg.selectAll(".nodetext").remove();
-        svg.selectAll(".linktext").remove();
-        simulation.restart();
-      }
-
-      function mouse_on_legend(d) {
-        if(d3.select(this).style("fill-opacity")==1){
+    function mouse_on_legend(d) {
+      if(d3.select(this).style("fill-opacity")==1){
         award_mouse=d;
         textDisplay=svg.append("g").attr("class", "text_link")
         simulation.stop();
@@ -358,13 +347,15 @@
             .attr("x",xC)
             .attr("y",yC)
             .attr("pointer-events","none")
-            .text(function(){return d.name;})
+            .text(function(){
+              return d.name;
+            })
             .style("opacity",0)
             .transition()
             .duration(transition)
             .style("opacity",1);
             return true;
-          };
+          }
         })
         .transition()
         .duration(transition)
@@ -408,103 +399,36 @@
         .style("stroke-width","1")
         .style("opacity", 1);
       }
-}
-      function mouse_out_legend() {
-        d3.selectAll("circle").transition()
-        .duration(transition).style("opacity",1).attr("r",r);
-        d3.selectAll(".link").transition()
-        .duration(transition).style("opacity",1).style("stroke","grey").style("stroke-width","0.7");
-        svg.selectAll(".text_link").remove();
-        simulation.restart();
-      }
+    }
+    function mouse_out_legend() {
+      d3.selectAll("circle").transition()
+      .duration(transition).style("opacity",1).attr("r",r);
+      d3.selectAll(".link").transition()
+      .duration(transition).style("opacity",1).style("stroke","grey").style("stroke-width","0.7");
+      svg.selectAll(".text_link").remove();
+      simulation.restart();
+    }
 
-      /* init an array in which we want to store nodes we will delete*/
+    /* init an array in which we want to store nodes we will delete*/
 
-      var data_to_remove ={"nodes":[],"links":[]};
+    var data_to_remove ={"nodes":[],"links":[]};
 
-      var all=infos.append("svg").attr("height","5%");
+    var all=infos.append("svg").attr("height","5%");
 
-      all.append("rect")
-      .attr("x", 1)
-      .attr("y",1)
-      .attr("width", 18)
-      .attr("height", 18)
-      .attr("fill", 'black')
-      .attr("stroke",'black')
-      .attr("stroke-width",2)
-      .style("fill-opacity",1)
-      .on("click", function(d){
-        if (d3.select(this).style("fill-opacity")==1) {
-
-          d3.selectAll("rect").style("fill-opacity",0.1);
-          for (var i=0;i<network.nodes.length;i++){
-            data_to_remove.nodes.push(network.nodes[i].id)
-              }
-
-              data_to_remove.links=[];
-              for (var k=0;k<data_to_remove.nodes.length;k++){
-                for (var j=0;j<network.links.length;j++){
-                  if(network.links[j].source.id===data_to_remove.nodes[k] || network.links[j].target.id===data_to_remove.nodes[k]){
-                    data_to_remove.links.push(network.links[j].id);
-                  }
-                }
-              }
-        /*  for (var j=0;j<network.links.length-10;j++){
-            data_to_remove.links.push(network.links[i].id)
-          }*/
-            }
-
-        else {
-          data_to_remove ={"nodes":[],"links":[]};
-          d3.selectAll("rect").style("fill-opacity",1);
-
-        }
-
-
-        restart(data_to_remove);
-
-      });
-
-      all.append("text")
-      .attr("x", 25)
-      .attr("y",10)
-      .attr("dy", ".35em")
-      .style("text-anchor", "left")
-      .text("All")
-
-      // draw legend
-      var legend = infos.append("svg").attr("height","45%").selectAll(".legend")
-      .data(color.domain())
-      .enter().append("g")
-      .attr("class", "legend")
-      .attr("transform", (d, i) => { return "translate(0," + i * 22 + ")"; });
-
-      // draw legend colored rectangles
-      legend.append("rect")
-      .attr("x", 1)
-      .attr("y",0)
-      .attr("width", 18)
-      .attr("height", 18)
-      .attr("fill", color)
-      .attr("stroke",color)
-      .attr("stroke-width",2)
-      .style("fill-opacity",1)
-      .on("click", function(d){
-        if (d3.select(this).style("fill-opacity")==1) {
-          d3.select(this).style("fill-opacity",0.1)
-        }
-        else {
-          d3.select(this).style("fill-opacity",1)
-        }
+    all.append("rect")
+    .attr("x", 1)
+    .attr("y",1)
+    .attr("width", 18)
+    .attr("height", 18)
+    .attr("fill", 'black')
+    .attr("stroke",'black')
+    .attr("stroke-width",2)
+    .style("fill-opacity",1)
+    .on("click", function(d){
+      if (d3.select(this).style("fill-opacity")==1) {
+        d3.selectAll("rect").style("fill-opacity",0.1);
         for (var i=0;i<network.nodes.length;i++){
-          if (network.nodes[i].nomination.award===d){
-            if (data_to_remove.nodes.includes(network.nodes[i].id)){
-              data_to_remove.nodes.splice(data_to_remove.nodes.indexOf(network.nodes[i].id),1);
-            }
-            else {
-              data_to_remove.nodes.push(network.nodes[i].id)
-            }
-          }
+          data_to_remove.nodes.push(network.nodes[i].id)
         }
         data_to_remove.links=[];
         for (var k=0;k<data_to_remove.nodes.length;k++){
@@ -514,81 +438,135 @@
             }
           }
         }
-
-        restart(data_to_remove);
-
-      })
-      .on("mouseover", mouse_on_legend)
-      .on("mouseout", mouse_out_legend);
-
-      // draw legend text
-      legend.append("text")
-      .attr("x", 25)
-      .attr("y",6)
-      .attr("dy", ".35em")
-      .style("text-anchor", "left")
-      .text(d => { return d;})
+      }
+      else {
+        data_to_remove ={"nodes":[],"links":[]};
+        d3.selectAll("rect").style("fill-opacity",1);
+      }
+      restart(data_to_remove);
     });
 
+    all.append("text")
+    .attr("x", 25)
+    .attr("y",10)
+    .attr("dy", ".35em")
+    .style("text-anchor", "left")
+    .text("All")
+
+    // draw legend
+    var legend = infos.append("svg").attr("height","45%").selectAll(".legend")
+    .data(color.domain())
+    .enter().append("g")
+    .attr("class", "legend")
+    .attr("transform", (d, i) => { return "translate(0," + i * 22 + ")"; });
+
+    // draw legend colored rectangles
+    legend.append("rect")
+    .attr("x", 1)
+    .attr("y",0)
+    .attr("width", 18)
+    .attr("height", 18)
+    .attr("fill", color)
+    .attr("stroke",color)
+    .attr("stroke-width",2)
+    .style("fill-opacity",1)
+    .on("click", function(d){
+      if (d3.select(this).style("fill-opacity")==1) {
+        d3.select(this).style("fill-opacity",0.1)
+      }
+      else {
+        d3.select(this).style("fill-opacity",1)
+      }
+      for (var i=0;i<network.nodes.length;i++){
+        if (network.nodes[i].nomination.award===d){
+          if (data_to_remove.nodes.includes(network.nodes[i].id)){
+            data_to_remove.nodes.splice(data_to_remove.nodes.indexOf(network.nodes[i].id),1);
+          }
+          else {
+            data_to_remove.nodes.push(network.nodes[i].id)
+          }
+        }
+      }
+      data_to_remove.links=[];
+      for (var k=0;k<data_to_remove.nodes.length;k++){
+        for (var j=0;j<network.links.length;j++){
+          if(network.links[j].source.id===data_to_remove.nodes[k] || network.links[j].target.id===data_to_remove.nodes[k]){
+            data_to_remove.links.push(network.links[j].id);
+          }
+        }
+      }
+
+      restart(data_to_remove);
+
+    })
+    .on("mouseover", mouse_on_legend)
+    .on("mouseout", mouse_out_legend);
+
+    // draw legend text
+    legend.append("text")
+    .attr("x", 25)
+    .attr("y",6)
+    .attr("dy", ".35em")
+    .style("text-anchor", "left")
+    .text(d => { return d;})
+  });
 
 
-    function format_to_network(data,choice){
-      n=data.length;
 
-      network={"nodes":[],"links":[]}
-      for (var i=0;i<n;i++){
-        actor={};
+  function format_to_network(data,choice){
+    n=data.length;
 
-        if (choice.includes(data[i].nomination[0].award)){
-          actor.name=data[i].name;
-          actor.id=data[i].id;
-          actor.nomination=data[i].nomination[0];
-          network.nodes.push(actor);
-          credtis_i=[];
-          credits_i=data[i].credits.crew.concat(data[i].credits.cast);
-          movies_i=[];
-          for (var j=i+1;j<n;j++){
-            if (choice.includes(data[j].nomination[0].award)){
-              movies_j=[];
-              credits_j= data[j].credits.crew.concat(data[j].credits.cast);
+    network={"nodes":[],"links":[]}
+    for (var i=0;i<n;i++){
+      actor={};
 
-              for (var l=0;l<credits_i.length;l++){
-                for (var m=0;m<credits_j.length;m++){
-                  if (movies_i.includes(credits_i[l].id)==false && movies_j.includes(credits_j[m].id)==false && credits_i[l].id===credits_j[m].id){
-                    link={};
-                    movies_i.push(credits_i[l].id);
-                    movies_j.push(credits_j[m].id);
-                    link.source=data[i].id;
-                    link.target=data[j].id;
-                    link.movie=credits_i[l].original_title;
-                    link.movie_id=credits_i[l].id;
-                    link.id=data[i].id+"_"+data[j].id+"_"+credits_i[l].id;
-                    network.links.push(link);
-                  }
+      if (choice.includes(data[i].nomination[0].award)){
+        actor.name=data[i].name;
+        actor.id=data[i].id;
+        actor.nomination=data[i].nomination[0];
+        network.nodes.push(actor);
+        credtis_i=[];
+        credits_i=data[i].credits.crew.concat(data[i].credits.cast);
+        movies_i=[];
+        for (var j=i+1;j<n;j++){
+          if (choice.includes(data[j].nomination[0].award)){
+            movies_j=[];
+            credits_j= data[j].credits.crew.concat(data[j].credits.cast);
+
+            for (var l=0;l<credits_i.length;l++){
+              for (var m=0;m<credits_j.length;m++){
+                if (movies_i.includes(credits_i[l].id)==false && movies_j.includes(credits_j[m].id)==false && credits_i[l].id===credits_j[m].id){
+                  link={};
+                  movies_i.push(credits_i[l].id);
+                  movies_j.push(credits_j[m].id);
+                  link.source=data[i].id;
+                  link.target=data[j].id;
+                  link.movie=credits_i[l].original_title;
+                  link.movie_id=credits_i[l].id;
+                  link.id=data[i].id+"_"+data[j].id+"_"+credits_i[l].id;
+                  network.links.push(link);
                 }
               }
             }
           }
         }
       }
-      return network;
     }
+    return network;
+  }
 
-
-
-    function list_award(data){
-      output=[];
-      for (var i=0;i<data.length;i++){
-        if (!output.includes(data[i].nomination[0].award)){
-          output.push(data[i].nomination[0].award);
-        }
+  function list_award(data){
+    output=[];
+    for (var i=0;i<data.length;i++){
+      if (!output.includes(data[i].nomination[0].award)){
+        output.push(data[i].nomination[0].award);
       }
-      return output;
     }
+    return output;
+  }
 
-    Array.prototype.diff = function(a) {
-      return this.filter(function(i) {return a.indexOf(i) < 0;});
-    };
-
-    </script>
-  </body>
+  Array.prototype.diff = function(a) {
+    return this.filter(function(i) {return a.indexOf(i) < 0;});
+  };
+</script>
+</body>
