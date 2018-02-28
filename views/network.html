@@ -107,16 +107,29 @@
     // add the curved links to our graphic
     var link = svg.append("g").attr("class","links").selectAll(".link")
 
-    .data(links, function(d){
-      return d.id;
-    })
+    .data(links, function(d){return d.id;})
     .enter()
     .append("path")
     .attr("class", "link")
-
+    .attr("id",function(d) { return d.id; })
     .style("stroke","grey")
     .style("stroke-width","0.7")
     .style("pointer-events", "none");
+/*
+    var linktext = svg.append("g").selectAll(".linkname")
+    .data(links, function(d){return d.id;});
+
+   linktext.enter().append("g")
+    .append("text")
+    .attr("class", "linklabel")
+  .style("font-size", "13px")
+    .attr("x", "50")
+  .attr("y", "-20")
+    .attr("text-anchor", "start")
+    .style("fill","#000")
+  .append("textPath")
+   .attr("xlink:href",function(d,i) { return "#" + d.id;})
+    .text(function(d){return d.movie;});*/
 
     // add the nodes to the graphic
     var node = svg.append("g").attr("class","nodes").selectAll(".node")
@@ -239,7 +252,11 @@
       .transition().attr("r", r);
       d3.selectAll(".link").style("opacity", .05);
       touchID=d.id;
-      textDisplay=svg.append("g").attr("class", "text_link")
+      textDisplay=svg.append("g").attr("class", "nodetext");
+      linktext = svg.append("g").attr('class',"linktext").selectAll(".linkname")
+      .data(links
+        .filter(function(d){return d.source.id === touchID || d.target.id === touchID}), function(d){return d.id;});
+
 
       //regarder : http://jsfiddle.net/bc4um7pc/  https://stackoverflow.com/questions/20202424/how-to-have-a-text-label-on-links-in-d3-force-directed-graphs
 
@@ -263,21 +280,39 @@
             })
 
             .style("opacity", 1);
-            xA=parseFloat(d3.select(this).attr("x1"));
-            xB=parseFloat(d3.select(this).attr("x2"));
-            yA=parseFloat(d3.select(this).attr("y1"));
-            yB=parseFloat(d3.select(this).attr("y2"));
+
+            path=(d3.select(this).attr("d")).split(",");
+
+            xA=parseFloat(path[0].split("M")[1]);
+            xB=parseFloat(path[2].split(" ")[1]);
+            yA=parseFloat(path[1].split("S")[0]);
+            yB=parseFloat(path[3]);
             xT=xA+(xB-xA)/2.0;
             yT=yA+(yB-yA)/2.0;
             movieT=d.movie;
             theta=(180.0/Math.PI)*Math.acos(Math.abs(xB-xA)/Math.sqrt((yB-yA)*(yB-yA)+(xB-xA)*(xB-xA))/2.0);
-            textDisplay.append("text")
+            linktext.enter().append("g")
+             .append("text")
+             .attr("class", "linklabel")
+            .style("font-size", "13px")
+             .attr("x", "50")
+            .attr("y", "-20")
+             .attr("text-anchor", "start")
+             .style("fill","#000")
+            .append("textPath")
+            .attr("xlink:href",function(d,i) { return "#" + d.id;})
+             .text(function(d){return d.movie;});
+
+
+
+
+          /*  textDisplay.append("text")
 
             .attr("x",xT)
             .attr("y",yT)
 
             .attr("pointer-events","none")
-            .text(function(d){return movieT});
+            .text(function(d){return movieT});*/
             return true;
           }
         }).style("stroke","black")
@@ -294,7 +329,8 @@
 
         d3.selectAll("circle").style("opacity",1).attr("r",r);
         d3.selectAll(".link").style("opacity",1).style("stroke","grey").style("stroke-width","0.7");
-        svg.selectAll(".text_link").remove();
+        svg.selectAll(".nodetext").remove();
+        svg.selectAll(".linktext").remove();
         simulation.restart();
       }
 
