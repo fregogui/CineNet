@@ -48,7 +48,8 @@
   height = 700,
   radius=35;
   var margin = 50;
-
+  var r=12;
+  var transition=500;
 
   var main_div=d3.select("body").append("div");
 
@@ -85,14 +86,6 @@
     var links = network.links;
 
 
-
-
-
-
-
-
-
-
     // add the nodes to the simulation and
     // tell it what to do on each tick
     simulation
@@ -119,7 +112,9 @@
     .enter()
     .append("path")
     .attr("class", "link")
-    .attr("stroke","blue")
+
+    .style("stroke","grey")
+    .style("stroke-width","0.7")
     .style("pointer-events", "none");
 
     // add the nodes to the graphic
@@ -129,7 +124,7 @@
     })
     .enter().append("circle")
     .attr("class", "node")
-    .attr("r", 12)
+    .attr("r", r)
     .attr("id", function(d) { return "_" + d.id; })
     .attr("fill", function(d) {
       return color(d.nomination.award);
@@ -170,7 +165,7 @@
       node.exit().remove();
       var newNode = node.enter().append("circle")
       .attr("class", "node")
-      .attr("r", 12)
+      .attr("r", r)
       .attr("id", function(d) { return "_" + d.id; })
       .attr("fill", function(d){
         return color(d.nomination.award)
@@ -226,7 +221,7 @@
     function mouse_on(d){
       simulation.stop();
       tooltip.transition()
-      .duration(500)
+      .duration(transition)
       .style("opacity", 0.5);
       tooltip.html(`<p><b>Name : </b>${d.name}</p>`+`<p><b>Film : </b>${d.nomination.movie}</p>`+`<p><b>Nomination : </b>${d.nomination.award}</p>`)
       .style("left", "5px")
@@ -235,7 +230,7 @@
       d3.selectAll("circle").style("opacity", .1);
 
       d3.select("#_" + d.id).attr("r", 30).style("opacity",1)
-      .transition().attr("r", 12);
+      .transition().attr("r", r);
       d3.selectAll(".link").style("opacity", .05);
       touchID=d.id;
       textDisplay=svg.append("g").attr("class", "text_link")
@@ -260,6 +255,7 @@
                 return true;
               }
             })
+
             .style("opacity", 1);
             xA=parseFloat(d3.select(this).attr("x1"));
             xB=parseFloat(d3.select(this).attr("x2"));
@@ -278,7 +274,8 @@
             .text(function(d){return movieT});
             return true;
           }
-        })
+        }).style("stroke","black")
+        .style("stroke-width","3")
 
 
         .style("opacity", 1);
@@ -286,11 +283,11 @@
 
       function mouse_out() {
         tooltip.transition()
-        .duration(500)
+        .duration(transition)
         .style("opacity", 0);
 
-        d3.selectAll("circle").style("opacity",1).attr("r",12);
-        d3.selectAll(".link").style("opacity",1).attr("stroke","grey").attr("stroke-width",1);
+        d3.selectAll("circle").style("opacity",1).attr("r",r);
+        d3.selectAll(".link").style("opacity",1).style("stroke","grey").style("stroke-width","0.7");
         svg.selectAll(".text_link").remove();
         simulation.restart();
       }
@@ -301,10 +298,10 @@
         simulation.stop();
         d3.selectAll("circle")
         .transition()
-        .duration(700).style("opacity", .1);
+        .duration(transition).style("opacity", .1);
         d3.selectAll(".link")
         .transition()
-        .duration(700).style("opacity", .1);
+        .duration(transition).style("opacity", .1);
         svg.selectAll("circle")
         .filter( function(d){
           if (d.nomination.award === award_mouse){
@@ -320,13 +317,13 @@
             .text(function(){return d.name;})
             .style("opacity",0)
             .transition()
-            .duration(700)
+            .duration(transition)
             .style("opacity",1);
             return true;
           };
         })
         .transition()
-        .duration(700)
+        .duration(transition)
 
         .style("opacity", 1);
 
@@ -349,28 +346,30 @@
                   })
                   .style("opacity",0)
                   .transition()
-                  .duration(700)
+                  .duration(transition)
                   .style("opacity",1);
                   return true;
                 }
               }
             })
             .transition()
-            .duration(700)
+            .duration(transition)
             .style("opacity", 1);
             return true;
           }
         })
         .transition()
-        .duration(700)
+        .duration(transition)
+        .style("stroke","black")
+        .style("stroke-width","1")
         .style("opacity", 1);
       }
 
       function mouse_out_legend() {
         d3.selectAll("circle").transition()
-        .duration(700).style("opacity",1).attr("r",12);
+        .duration(transition).style("opacity",1).attr("r",r);
         d3.selectAll(".link").transition()
-        .duration(700).style("opacity",1).attr("stroke","grey").attr("stroke-width",1);
+        .duration(transition).style("opacity",1).style("stroke","grey").style("stroke-width","0.7");
         svg.selectAll(".text_link").remove();
         simulation.restart();
       }
