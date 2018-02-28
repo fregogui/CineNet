@@ -301,7 +301,8 @@
              .style("fill","#000")
             .append("textPath")
             .attr("xlink:href",function(d,i) { return "#" + d.id;})
-             .text(function(d){return d.movie;});
+             .text(function(d){return d.movie;})
+             .style("pointer-events","none");
 
 
 
