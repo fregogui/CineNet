@@ -648,8 +648,9 @@
         foo=gradColor.append("linearGradient")
             .attr("id",function(){return "grad"+String(data.nodes[i].id);})
             .attr("x1", "100%").attr("x2", "0%").attr("y1", "0%").attr("y2", "0%")
-            foo.append("stop").attr("offset", "50%").style("stop-color", function(){return color(data.nodes[i].nomination[0].award)});
+            foo.append("stop").attr("offset", "10%").style("stop-color", function(){return color(data.nodes[i].nomination[0].award)});
             foo.append("stop").attr("offset", "50%").style("stop-color", function(){return color(data.nodes[i].nomination[1].award)});
+            foo.append("stop").attr("offset", "90%").style("stop-color", function(){return color(data.nodes[i].nomination[2].award)});
         }
       }
 
