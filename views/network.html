@@ -256,7 +256,6 @@
       d.fx = null;
       d.fy = null;
     }
-
     function mouse_on(d){
       node_display=[];
       link_display=[];
@@ -299,7 +298,7 @@
       d3.selectAll(".link").style("opacity", .05);
       touchID=d.id;
       textDisplay=svg.append("g").attr("class", "nodetext");
-      linktext = svg.append("g").attr('class',"linktext").selectAll(".linkname")
+      var linktext = svg.append("g").attr('class',"linktext").selectAll(".linkname")
       .data(links.filter(function(d){return d.source.id === touchID || d.target.id === touchID}), function(d){return d.id;});
 
       svg.selectAll(".link")
@@ -327,7 +326,7 @@
           .style("opacity", 1);
 
           if(label==="on") {
-            if (!link_display.includes(d.id)){
+
             path=(d3.select(this).attr("d")).split(",");
 
             xA=parseFloat(path[0].split("M")[1]);
@@ -339,22 +338,26 @@
             dist_demi=Math.sqrt((yB-yA)*(yB-yA)+(xB-xA)*(xB-xA))/2;
             movieT=d.movie;
             theta=(180.0/Math.PI)*Math.acos(Math.abs(xB-xA)/Math.sqrt((yB-yA)*(yB-yA)+(xB-xA)*(xB-xA))/2.0);
-            linktext.enter().append("g")
+            linktext.enter()
             .append("text")
             .attr("class", "linklabel")
             .attr("x",String(dist_demi))
             .attr("dy", "-5")
             .attr("text-anchor", "start")
             .append("textPath")
-            .attr("xlink:href",function(d,i) {return "#" + d.id;})
-            .text(function(d){return d.movie;})
+            .attr("xlink:href",function(d,i) {return "#" + String(d.id);})
+
             .style("fill","black")
             .style("font","roboto")
             .style("font-size", "15px")
-            .style("pointer-events","none");
-            link_display.push(d.id);
+            .style("pointer-events","none")
+                .text(function(d){
+                  if (!link_display.includes(d.id)){
+                    link_display.push(d.id);
+                    return d.movie;}});
 
-          }
+
+
           }
 
           /*  textDisplay.append("text")
