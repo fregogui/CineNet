@@ -68,7 +68,7 @@
 
   //repartition démelage
   var simulation = d3.forceSimulation()
-  .force("link", d3.forceLink().id(function(d) {return d.id; }).strength(0.025))//.distance(function(){return 1}).strength(1))
+  .force("link", d3.forceLink().id(function(d) {return d.id; }).strength(0.025))//.distance(function(d,i){return i*5}).strength(1))
   .force("charge", d3.forceCollide().radius(35))
   //     .force("r", d3.forceRadial(function(d)  {return (19-color.domain().indexOf(d.nomination.award))*50;}))
   .force("center", d3.forceCenter(0,0))
@@ -209,6 +209,9 @@ var color=d3.scaleOrdinal(d3.schemeCategory20).domain(awards);
     newLink = link.enter()
     .append("path")
     .attr("class", "link")
+    .attr("id",function(d) {
+      return d.id;
+    })
     .style("stroke","grey")
     .style("stroke-width","0.7")
     .style("pointer-events", "none");
