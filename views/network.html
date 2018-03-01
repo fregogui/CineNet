@@ -50,6 +50,7 @@
   var margin = 50;
   var r=12;
   var transition=500;
+  var label="on"
 
   var main_div=d3.select("body").append("div");
 
@@ -287,6 +288,7 @@ var color=d3.scaleOrdinal(d3.schemeCategory20).domain(awards);
           })
           .style("opacity", 1);
 
+          if(label==="on"){
           path=(d3.select(this).attr("d")).split(",");
 
           xA=parseFloat(path[0].split("M")[1]);
@@ -308,7 +310,7 @@ var color=d3.scaleOrdinal(d3.schemeCategory20).domain(awards);
           .append("textPath")
           .attr("xlink:href",function(d,i) { return "#" + d.id;})
           .text(function(d){return d.movie;})
-          .style("pointer-events","none");
+          .style("pointer-events","none");}
 
           /*  textDisplay.append("text")
 
@@ -472,7 +474,36 @@ var color=d3.scaleOrdinal(d3.schemeCategory20).domain(awards);
     .attr("dy", ".35em")
     .style("text-anchor", "left")
     .text("All")
+    //active label :
+    var label_activation=infos.append("svg").attr("height","5%");
 
+    label_activation.append("rect")
+    .attr("x", 1)
+    .attr("y",1)
+    .attr("width", 18)
+    .attr("height", 18)
+    .attr("fill", 'black')
+    .attr("stroke",'black')
+    .attr("stroke-width",2)
+    .style("fill-opacity",1)
+    .on("click", function(d){
+      if (d3.select(this).style("fill-opacity")==1) {
+        d3.select(this).style("fill-opacity",0);
+        label="off"
+        }
+      else {
+        label="on"
+        d3.select(this).style("fill-opacity",1);
+      }
+
+    });
+
+    label_activation.append("text")
+    .attr("x", 25)
+    .attr("y",10)
+    .attr("dy", ".35em")
+    .style("text-anchor", "left")
+    .text("Label on links")
     // draw legend
     var legend = infos.append("svg").attr("height","60%").selectAll(".legend")
     .data(awards)
