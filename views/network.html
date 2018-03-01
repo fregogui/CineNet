@@ -2,8 +2,6 @@
 <head>
   <meta charset="utf-8">
   <script src="/d3"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>
-  <script src="/tools/conic-gradient.js"></script>
   <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
   <style>
   text {
@@ -166,6 +164,7 @@
     .attr('stroke', "black")
     .on("mouseover", mouse_on)
     .on("mouseout", mouse_out)
+    .on("click", click_on_node)
     .call(d3.drag()
     .on("start", dragstarted)
     .on("drag", dragged)
@@ -256,6 +255,7 @@
       d.fx = null;
       d.fy = null;
     }
+
     function mouse_on(d){
       node_display=[];
       link_display=[];
@@ -335,7 +335,7 @@
             yB=parseFloat(path[3]);
             xT=xA+(xB-xA)/2.0;
             yT=yA+(yB-yA)/2.0;
-            dist_demi=Math.sqrt((yB-yA)*(yB-yA)+(xB-xA)*(xB-xA))/2;
+            dist_demi=Math.sqrt((yB-yA)*(yB-yA)+(xB-xA)*(xB-xA))/2 + 3;
             movieT=d.movie;
             theta=(180.0/Math.PI)*Math.acos(Math.abs(xB-xA)/Math.sqrt((yB-yA)*(yB-yA)+(xB-xA)*(xB-xA))/2.0);
             linktext.enter()
@@ -351,13 +351,12 @@
             .style("font","roboto")
             .style("font-size", "15px")
             .style("pointer-events","none")
-                .text(function(d){
-                  if (!link_display.includes(d.id)){
-                    link_display.push(d.id);
-                    return d.movie;}});
-
-
-
+            .text(function(d){
+              if (!link_display.includes(d.id)){
+                link_display.push(d.id);
+                return d.movie;
+              }
+            });
           }
 
           /*  textDisplay.append("text")
@@ -385,6 +384,51 @@
       svg.selectAll(".nodetext").remove();
       svg.selectAll(".linktext").remove();
       simulation.restart();
+    }
+
+    function click_on_node(d) {
+      var nodes_to_remove = {
+        nodes:[],
+        links:[]
+      };
+      // svg.selectAll(".link")
+      // .each(function(l) {
+      //   if(l.source.id === d.id || l.target.id === d.id) {
+      //     d3.selectAll("circle").each(function(c) {
+      //       if(l.source.id === c.id || l.target.id === c.id) {
+      //         nodes_to_remove.links.push(l.id)
+      //       }
+      //     });
+      //   }
+      // });
+
+      d3.selectAll('circle').each(function(c) {
+        if (d !== c) {
+          nodes_to_remove.nodes.push(c.id);
+        }
+      });
+      d3.selectAll('.link').each(function(l) {
+        if (l.source.id === d.id) {
+          nodes_to_remove.nodes = nodes_to_remove.nodes.filter( el => {
+            return el !== l.target.id;
+          });
+        }
+        if (l.target.id === d.id) {
+          nodes_to_remove.nodes = nodes_to_remove.nodes.filter( el => {
+            return el !== l.source.id;
+          });
+        }
+      });
+
+      for (var k=0;k<nodes_to_remove.nodes.length;k++){
+        for (var j=0;j<network.links.length;j++){
+          if(network.links[j].source.id===nodes_to_remove.nodes[k] || network.links[j].target.id===nodes_to_remove.nodes[k]){
+            nodes_to_remove.links.push(network.links[j].id);
+          }
+        }
+      }
+
+      restart(nodes_to_remove);
     }
 
     function mouse_on_legend(d) {
@@ -516,7 +560,7 @@
       else {
         data_to_remove ={"nodes":[],"links":[]};
         d3.selectAll(".rectlegend").style("fill-opacity",1);
-          d3.select(this).style("fill-opacity",1);
+        d3.select(this).style("fill-opacity",1);
       }
       restart(data_to_remove);
     });
@@ -556,6 +600,7 @@
     .attr("dy", ".35em")
     .style("text-anchor", "left")
     .text("Label on links")
+
     // draw legend
     var legend = infos.append("svg").attr("height","45%").selectAll(".legend")
     .data(awards)
@@ -582,8 +627,8 @@
         d3.select(this).style("fill-opacity",1)
       }
       for (var i=0;i<network.nodes.length;i++){
-      var searchNomination = network.nodes[i].nomination.filter( nomination => { return nomination.award === d; });
-       if (searchNomination.length !== 0){
+        var searchNomination = network.nodes[i].nomination.filter( nomination => { return nomination.award === d; });
+        if (searchNomination.length !== 0){
           if (data_to_remove.nodes.includes(network.nodes[i].id)){
             data_to_remove.nodes.splice(data_to_remove.nodes.indexOf(network.nodes[i].id),1);
           }
@@ -638,19 +683,19 @@
     function multicolor(data){
       for (var i=0;i<data.nodes.length;i++){
         if (data.nodes[i].nomination.length==2){
-        foo=gradColor.append("linearGradient")
-            .attr("id",function(){return "grad"+String(data.nodes[i].id);})
-            .attr("x1", "100%").attr("x2", "0%").attr("y1", "0%").attr("y2", "0%")
-            foo.append("stop").attr("offset", "50%").style("stop-color", function(){return color(data.nodes[i].nomination[0].award)});
-            foo.append("stop").attr("offset", "50%").style("stop-color", function(){return color(data.nodes[i].nomination[1].award)});
+          foo=gradColor.append("linearGradient")
+          .attr("id",function(){return "grad"+String(data.nodes[i].id);})
+          .attr("x1", "100%").attr("x2", "0%").attr("y1", "0%").attr("y2", "0%")
+          foo.append("stop").attr("offset", "50%").style("stop-color", function(){return color(data.nodes[i].nomination[0].award)});
+          foo.append("stop").attr("offset", "50%").style("stop-color", function(){return color(data.nodes[i].nomination[1].award)});
         }
         else if (data.nodes[i].nomination.length==3){
-        foo=gradColor.append("linearGradient")
-            .attr("id",function(){return "grad"+String(data.nodes[i].id);})
-            .attr("x1", "100%").attr("x2", "0%").attr("y1", "0%").attr("y2", "0%")
-            foo.append("stop").attr("offset", "10%").style("stop-color", function(){return color(data.nodes[i].nomination[0].award)});
-            foo.append("stop").attr("offset", "50%").style("stop-color", function(){return color(data.nodes[i].nomination[1].award)});
-            foo.append("stop").attr("offset", "90%").style("stop-color", function(){return color(data.nodes[i].nomination[2].award)});
+          foo=gradColor.append("linearGradient")
+          .attr("id",function(){return "grad"+String(data.nodes[i].id);})
+          .attr("x1", "100%").attr("x2", "0%").attr("y1", "0%").attr("y2", "0%")
+          foo.append("stop").attr("offset", "10%").style("stop-color", function(){return color(data.nodes[i].nomination[0].award)});
+          foo.append("stop").attr("offset", "50%").style("stop-color", function(){return color(data.nodes[i].nomination[1].award)});
+          foo.append("stop").attr("offset", "90%").style("stop-color", function(){return color(data.nodes[i].nomination[2].award)});
         }
       }
 
@@ -728,5 +773,5 @@
     });
   };
 
-</script>
+  </script>
 </body>
