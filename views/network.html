@@ -80,6 +80,13 @@
     // links between nodes
     var links = network.links;
 
+    for (var i=0; i<links.length; i++) {
+      if (i != 0 && links[i].source == links[i-1].source && links[i].target == links[i-1].target) {
+        links[i].linknum = links[i-1].linknum + 1;
+      }
+      else {links[i].linknum = 1;};
+    };
+
     // add the nodes to the simulation and
     // tell it what to do on each tick
     simulation
@@ -154,7 +161,7 @@
 
     // links are drawn as curved paths between nodes
     function positionLink(d) {
-      var offset = 30;
+      var offset = Math.pow(-1, d.linknum)*100/d.linknum;
       var midpoint_x = (d.source.x + d.target.x) / 2;
       var midpoint_y = (d.source.y + d.target.y) / 2;
       var dx = (d.target.x - d.source.x);
@@ -178,9 +185,11 @@
       var newNode = node.enter().append("circle")
       .attr("class", "node")
       .attr("r", r)
-      .attr("id", function(d) { return "_" + d.id; })
-      .attr("fill", function(d){
-        return color(d.nomination.award)
+      .attr("id", function(d) {
+        return "_" + d.id;
+      })
+      .attr("fill", function(d) {
+        return color(d.nomination.award);
       })
       .attr('stroke', "black")
       .on("mouseover", mouse_on)
@@ -202,7 +211,7 @@
       .style("stroke","grey")
       .style("stroke-width","0.7")
       .style("pointer-events", "none");
-      ;
+
       link = link.merge(newLink);
 
       //restart forces
