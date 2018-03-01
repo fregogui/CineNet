@@ -74,7 +74,7 @@
 
   //repartition démelage
   var simulation = d3.forceSimulation()
-  .force("link", d3.forceLink().id(function(d) {return d.id; }).strength(0.025))//.distance(function(d,i){return i*5}).strength(1))
+  .force("link", d3.forceLink().id(function(d) {return d.id; }).strength(0.025).distance(function(d,i){if (i>6){return (300-i)*4;} else{return i*10+300;}}))//.strength(1))
   .force("charge", d3.forceCollide().radius(35))
   //     .force("r", d3.forceRadial(function(d)  {return (19-color.domain().indexOf(d.nomination.award))*50;}))
   .force("center", d3.forceCenter(0,0))
@@ -173,7 +173,7 @@
 
     // links are drawn as curved paths between nodes
     function positionLink(d) {
-      var offset = Math.pow(-1, d.linknum)*100/d.linknum;
+      var offset = Math.pow(-1, d.linknum)*100*(d.linknum/3);
       var midpoint_x = (d.source.x + d.target.x) / 2;
       var midpoint_y = (d.source.y + d.target.y) / 2;
       var dx = (d.target.x - d.source.x);
