@@ -62,11 +62,11 @@
 
   var main_div=d3.select("body").append("div");
 
-  var infos=main_div.append("div").attr("class","infos").style("width","29%").style("height","1000px");
+  var infos=main_div.append("div").attr("class","infos").style("width","30%").style("height","1000px");
   // add the tooltip area to the webpage
 
   // create an svg to draw in
-  var svg = main_div.append("div").attr("class","chart").style("width","70%").style("height","1000px")
+  var svg = main_div.append("div").attr("class","chart").style("width","68%").style("height","1000px")
   .append("svg")
   .attr("viewBox", function(){return String(-width/2)+" "+String(-height/2)+" "+String(width)+" "+String(height)});
 
@@ -259,6 +259,7 @@
 
     function mouse_on(d){
       node_display=[];
+      link_display=[];
       simulation.stop();
       tooltip.transition()
       .duration(transition)
@@ -326,6 +327,7 @@
           .style("opacity", 1);
 
           if(label==="on") {
+            if (!link_display.includes(d.id)){
             path=(d3.select(this).attr("d")).split(",");
 
             xA=parseFloat(path[0].split("M")[1]);
@@ -334,20 +336,25 @@
             yB=parseFloat(path[3]);
             xT=xA+(xB-xA)/2.0;
             yT=yA+(yB-yA)/2.0;
+            dist_demi=Math.sqrt((yB-yA)*(yB-yA)+(xB-xA)*(xB-xA));
             movieT=d.movie;
             theta=(180.0/Math.PI)*Math.acos(Math.abs(xB-xA)/Math.sqrt((yB-yA)*(yB-yA)+(xB-xA)*(xB-xA))/2.0);
             linktext.enter().append("g")
             .append("text")
             .attr("class", "linklabel")
-            .style("font-size", "13px")
-            .attr("x", "50")
-            .attr("y", "-20")
+            .attr("x","20")
+            .attr("dy", "-5")
             .attr("text-anchor", "start")
-            .style("fill","#000")
             .append("textPath")
-            .attr("xlink:href",function(d,i) { return "#" + d.id;})
+            .attr("xlink:href",function(d,i) {return "#" + d.id;})
             .text(function(d){return d.movie;})
+            .style("fill","black")
+            .style("font","roboto")
+            .style("font-size", "15px")
             .style("pointer-events","none");
+            link_display.push(d.id);
+
+          }
           }
 
           /*  textDisplay.append("text")
@@ -595,8 +602,9 @@
 
     // draw legend text
     legend.append("text")
+    .style("font-size","12")
     .attr("x", 25)
-    .attr("y",6)
+    .attr("y",10)
     .attr("dy", ".35em")
     .style("text-anchor", "left")
     .text(d => { return d;})
