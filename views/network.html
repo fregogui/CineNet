@@ -44,7 +44,7 @@
 
 <body>
   <div>
-    <input id="targetNode" name="targetNode" type="text" value="Enter the text" />
+    <input id="targetNode" name="targetNode" type="text" value="" placeholder="Enter an artist name" />
     <button onclick="search()">Search</button>
   </div>
   <script>
@@ -62,7 +62,7 @@
 
   var infos=main_div.append("div").attr("class","infos").style("width","29%").style("height","1000px");
   // add the tooltip area to the webpage
-  let tooltip = infos.append("div").attr("class", "tooltip").style("opacity", 0);
+
   // create an svg to draw in
   var svg = main_div.append("div").attr("class","chart").style("width","70%").style("height","1000px")
   .append("svg")
@@ -538,7 +538,7 @@
     .style("text-anchor", "left")
     .text("Label on links")
     // draw legend
-    var legend = infos.append("svg").attr("height","60%").selectAll(".legend")
+    var legend = infos.append("svg").attr("height","45%").selectAll(".legend")
     .data(awards)
     .enter().append("g")
     .attr("class", "legend")
@@ -610,6 +610,8 @@
       }
       return text
     }
+    //Add legend at the bottom of info
+    let tooltip = infos.append("div").attr("class", "tooltip").style("opacity", 0);
 
     multicolor(network)
     function multicolor(data){
