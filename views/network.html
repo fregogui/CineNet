@@ -70,7 +70,7 @@
   var simulation = d3.forceSimulation()
   .force("link", d3.forceLink().id(function(d) {return d.id; }).strength(0.025))//.distance(function(){return 1}).strength(1))
   .force("charge", d3.forceCollide().radius(35))
-//     .force("r", d3.forceRadial(function(d)  {return (19-color.domain().indexOf(d.nomination.award))*50;}))
+  //     .force("r", d3.forceRadial(function(d)  {return (19-color.domain().indexOf(d.nomination.award))*50;}))
   .force("center", d3.forceCenter(0,0))
 
   var color=d3.scaleOrdinal(d3.schemeCategory20);
@@ -101,7 +101,7 @@
       link.attr("d", positionLink);
 
       node.attr("cx", function (d) { return d.x=Math.max(-width/2+margin, Math.min(width/2 - margin, d.x)); })
-         .attr("cy", function(d) { return d.y= Math.max(-height/2+margin, Math.min(height/2 - margin, d.y)); });
+      .attr("cy", function(d) { return d.y= Math.max(-height/2+margin, Math.min(height/2 - margin, d.y)); });
     }
 
     // add the curved links to our graphic
@@ -115,20 +115,20 @@
     .style("stroke","grey")
     .style("stroke-width","0.7")
     .style("pointer-events", "none");
-/*
+    /*
     var linktext = svg.append("g").selectAll(".linkname")
     .data(links, function(d){return d.id;});
 
-   linktext.enter().append("g")
+    linktext.enter().append("g")
     .append("text")
     .attr("class", "linklabel")
-  .style("font-size", "13px")
+    .style("font-size", "13px")
     .attr("x", "50")
-  .attr("y", "-20")
+    .attr("y", "-20")
     .attr("text-anchor", "start")
     .style("fill","#000")
-  .append("textPath")
-   .attr("xlink:href",function(d,i) { return "#" + d.id;})
+    .append("textPath")
+    .attr("xlink:href",function(d,i) { return "#" + d.id;})
     .text(function(d){return d.movie;});*/
 
     // add the nodes to the graphic
@@ -141,122 +141,122 @@
     .attr("r", r)
     .attr("id", function(d) { return "_" + d.id; })
     .attr("fill", function(d) {if (d.nomination.length>1){return "black";}
-      else{return color(d.nomination[0].award);}
+    else{return color(d.nomination[0].award);}
+  })
+  .attr('stroke', "black")
+  .on("mouseover", mouse_on)
+  .on("mouseout", mouse_out)
+  .call(d3.drag()
+  .on("start", dragstarted)
+  .on("drag", dragged)
+  .on("end", dragended));
+
+  // links are drawn as curved paths between nodes
+  function positionLink(d) {
+    var offset = 30;
+    var midpoint_x = (d.source.x + d.target.x) / 2;
+    var midpoint_y = (d.source.y + d.target.y) / 2;
+    var dx = (d.target.x - d.source.x);
+    var dy = (d.target.y - d.source.y);
+    var normalise = Math.sqrt((dx * dx) + (dy * dy));
+    var offSetX = midpoint_x + offset*(dy/normalise);
+    var offSetY = midpoint_y - offset*(dx/normalise);
+    var source_x=Math.max(-width/2+margin, Math.min(width/2 - margin, d.source.x));
+    var source_y=Math.max(-height/2+margin, Math.min(height/2 - margin, d.source.y));
+    var target_x=Math.max(-width/2+margin, Math.min(width/2 - margin, d.target.x));
+    var target_y=Math.max(-height/2+margin, Math.min(height/2 - margin, d.target.y))
+    return "M" + source_x + "," + source_y +
+    "S" + offSetX + "," + offSetY +
+    " " + target_x + "," + target_y;
+  }
+
+
+
+  function restart(data_to_remove) {
+    //update nodes (remove or add)
+    node = node.data(network.nodes.filter(function(l){return !data_to_remove.nodes.includes(l.id)}), function(d) { return d.id;});
+    node.exit().remove();
+    var newNode = node.enter().append("circle")
+    .attr("class", "node")
+    .attr("r", r)
+    .attr("id", function(d) { return "_" + d.id; })
+    .attr("fill", function(d){
+      return color(d.nomination.award)
     })
     .attr('stroke', "black")
     .on("mouseover", mouse_on)
-    .on("mouseout", mouse_out)
+    .on("mouseout",mouse_out)
     .call(d3.drag()
     .on("start", dragstarted)
     .on("drag", dragged)
-    .on("end", dragended));
+    .on("end", dragended))
 
-    // links are drawn as curved paths between nodes
-    function positionLink(d) {
-      var offset = 30;
-      var midpoint_x = (d.source.x + d.target.x) / 2;
-      var midpoint_y = (d.source.y + d.target.y) / 2;
-      var dx = (d.target.x - d.source.x);
-      var dy = (d.target.y - d.source.y);
-      var normalise = Math.sqrt((dx * dx) + (dy * dy));
-      var offSetX = midpoint_x + offset*(dy/normalise);
-      var offSetY = midpoint_y - offset*(dx/normalise);
-      var source_x=Math.max(-width/2+margin, Math.min(width/2 - margin, d.source.x));
-      var source_y=Math.max(-height/2+margin, Math.min(height/2 - margin, d.source.y));
-      var target_x=Math.max(-width/2+margin, Math.min(width/2 - margin, d.target.x));
-      var target_y=Math.max(-height/2+margin, Math.min(height/2 - margin, d.target.y))
-      return "M" + source_x + "," + source_y +
-      "S" + offSetX + "," + offSetY +
-      " " + target_x + "," + target_y;
-    }
+    node = node.merge(newNode);
+
+    //update links (remove or add)
+
+    link = link.data(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}), function(d) { return d.id;});
+    link.exit().remove();
+    newLink = link.enter()
+    .append("path")
+    .attr("class", "link")
+    .style("stroke","grey")
+    .style("stroke-width","0.7")
+    .style("pointer-events", "none");
+    ;
+    link = link.merge(newLink);
 
 
-
-    function restart(data_to_remove) {
-      //update nodes (remove or add)
-      node = node.data(network.nodes.filter(function(l){return !data_to_remove.nodes.includes(l.id)}), function(d) { return d.id;});
-      node.exit().remove();
-      var newNode = node.enter().append("circle")
-      .attr("class", "node")
-      .attr("r", r)
-      .attr("id", function(d) { return "_" + d.id; })
-      .attr("fill", function(d){
-        return color(d.nomination.award)
-      })
-      .attr('stroke', "black")
-      .on("mouseover", mouse_on)
-      .on("mouseout",mouse_out)
-      .call(d3.drag()
-      .on("start", dragstarted)
-      .on("drag", dragged)
-      .on("end", dragended))
-
-      node = node.merge(newNode);
-
-      //update links (remove or add)
-
-      link = link.data(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}), function(d) { return d.id;});
-      link.exit().remove();
-      newLink = link.enter()
-        .append("path")
-        .attr("class", "link")
-      .style("stroke","grey")
-      .style("stroke-width","0.7")
-      .style("pointer-events", "none");
-      ;
-      link = link.merge(newLink);
-
-
-      //restart forces
+    //restart forces
 
 
 
-      simulation.force("link").links(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}));
-      simulation.force("charge", d3.forceCollide().radius(45));
-      simulation.force("center", d3.forceCenter(0,0));
-      //simulation.on("tick",ticked);
-      simulation.alpha(0.5).alphaTarget(0).restart();
-    }
+    simulation.force("link").links(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}));
+    simulation.force("charge", d3.forceCollide().radius(45));
+    simulation.force("center", d3.forceCenter(0,0));
+    //simulation.on("tick",ticked);
+    simulation.alpha(0.5).alphaTarget(0).restart();
+  }
 
 
 
-    function dragstarted(d) {
-      if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-      d.fx = d.x;
-      d.fy = d.y;
-    }
+  function dragstarted(d) {
+    if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+  }
 
-    function dragged(d) {
-      d.fx = d3.event.x;
-      d.fy = d3.event.y;
-    }
+  function dragged(d) {
+    d.fx = d3.event.x;
+    d.fy = d3.event.y;
+  }
 
-    function dragended(d) {
-      if (!d3.event.active) simulation.alphaTarget(0);
-      d.fx = null;
-      d.fy = null;
-    }
+  function dragended(d) {
+    if (!d3.event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+  }
 
-    function mouse_on(d){
+  function mouse_on(d){
 
-      simulation.stop();
-      tooltip.transition()
-      .duration(transition)
-      .style("opacity", 0.5);
-      tooltip.html(html_tooltip(d))
-      .style("left", "5px")
-      .style("top", "15px");
-      name_mouse=d.name;
-      d3.selectAll("circle").style("opacity", .1);
+    simulation.stop();
+    tooltip.transition()
+    .duration(transition)
+    .style("opacity", 0.5);
+    tooltip.html(html_tooltip(d))
+    .style("left", "5px")
+    .style("top", "15px");
+    name_mouse=d.name;
+    d3.selectAll("circle").style("opacity", .1);
 
-      d3.select("#_" + d.id).attr("r", 30).style("opacity",1)
-      .transition().attr("r", r);
-      d3.selectAll(".link").style("opacity", .05);
-      touchID=d.id;
-      textDisplay=svg.append("g").attr("class", "nodetext");
-      linktext = svg.append("g").attr('class',"linktext").selectAll(".linkname")
-      .data(links
-        .filter(function(d){return d.source.id === touchID || d.target.id === touchID}), function(d){return d.id;});
+    d3.select("#_" + d.id).attr("r", 30).style("opacity",1)
+    .transition().attr("r", r);
+    d3.selectAll(".link").style("opacity", .05);
+    touchID=d.id;
+    textDisplay=svg.append("g").attr("class", "nodetext");
+    linktext = svg.append("g").attr('class',"linktext").selectAll(".linkname")
+    .data(links
+      .filter(function(d){return d.source.id === touchID || d.target.id === touchID}), function(d){return d.id;});
 
 
       //regarder : http://jsfiddle.net/bc4um7pc/  https://stackoverflow.com/questions/20202424/how-to-have-a-text-label-on-links-in-d3-force-directed-graphs
@@ -293,22 +293,22 @@
             movieT=d.movie;
             theta=(180.0/Math.PI)*Math.acos(Math.abs(xB-xA)/Math.sqrt((yB-yA)*(yB-yA)+(xB-xA)*(xB-xA))/2.0);
             linktext.enter().append("g")
-             .append("text")
-             .attr("class", "linklabel")
+            .append("text")
+            .attr("class", "linklabel")
             .style("font-size", "13px")
-             .attr("x", "50")
+            .attr("x", "50")
             .attr("y", "-20")
-             .attr("text-anchor", "start")
-             .style("fill","#000")
+            .attr("text-anchor", "start")
+            .style("fill","#000")
             .append("textPath")
             .attr("xlink:href",function(d,i) { return "#" + d.id;})
-             .text(function(d){return d.movie;})
-             .style("pointer-events","none");
+            .text(function(d){return d.movie;})
+            .style("pointer-events","none");
 
 
 
 
-          /*  textDisplay.append("text")
+            /*  textDisplay.append("text")
 
             .attr("x",xT)
             .attr("y",yT)
@@ -338,78 +338,78 @@
 
       function mouse_on_legend(d) {
         if(d3.select(this).style("fill-opacity")==1){
-        award_mouse=d;
-        textDisplay=svg.append("g").attr("class", "text_link")
-        simulation.stop();
-        d3.selectAll("circle")
-        .transition()
-        .duration(transition).style("opacity", .1);
-        d3.selectAll(".link")
-        .transition()
-        .duration(transition).style("opacity", .1);
-        svg.selectAll("circle")
-        .filter( function(d){
-          if (d.nomination.award === award_mouse){
+          award_mouse=d;
+          textDisplay=svg.append("g").attr("class", "text_link")
+          simulation.stop();
+          d3.selectAll("circle")
+          .transition()
+          .duration(transition).style("opacity", .1);
+          d3.selectAll(".link")
+          .transition()
+          .duration(transition).style("opacity", .1);
+          svg.selectAll("circle")
+          .filter( function(d){
+            if (d.nomination.award === award_mouse){
 
-            xC=parseFloat(d3.select(this).attr("cx"));
-            yC=parseFloat(d3.select(this).attr("cy"));
-            id=parseFloat(d3.select(this).attr("id"));
+              xC=parseFloat(d3.select(this).attr("cx"));
+              yC=parseFloat(d3.select(this).attr("cy"));
+              id=parseFloat(d3.select(this).attr("id"));
 
-            textDisplay.append("text")
-            .attr("x",xC)
-            .attr("y",yC)
-            .attr("pointer-events","none")
-            .text(function(){return d.name;})
-            .style("opacity",0)
-            .transition()
-            .duration(transition)
-            .style("opacity",1);
-            return true;
-          };
-        })
-        .transition()
-        .duration(transition)
+              textDisplay.append("text")
+              .attr("x",xC)
+              .attr("y",yC)
+              .attr("pointer-events","none")
+              .text(function(){return d.name;})
+              .style("opacity",0)
+              .transition()
+              .duration(transition)
+              .style("opacity",1);
+              return true;
+            };
+          })
+          .transition()
+          .duration(transition)
 
-        .style("opacity", 1);
+          .style("opacity", 1);
 
-        svg.selectAll(".link")
-        .filter(function(d) {
-          if(d.source.nomination.award === award_mouse || d.target.nomination.award === award_mouse) {
-            d3.selectAll("circle").filter(function(f) {
-              if(d.source.id === f.id ||  d.target.id === f.id) {
+          svg.selectAll(".link")
+          .filter(function(d) {
+            if(d.source.nomination.award === award_mouse || d.target.nomination.award === award_mouse) {
+              d3.selectAll("circle").filter(function(f) {
+                if(d.source.id === f.id ||  d.target.id === f.id) {
 
-                if (f.nomination.award!=award_mouse) {
-                  xC=parseFloat(d3.select(this).attr("cx"));
-                  yC=parseFloat(d3.select(this).attr("cy"));
-                  id=parseFloat(d3.select(this).attr("id"));
-                  textDisplay.append("text")
-                  .attr("x",xC)
-                  .attr("y",yC)
-                  .attr("pointer-events","none")
-                  .text(function(){
-                    return f.name;
-                  })
-                  .style("opacity",0)
-                  .transition()
-                  .duration(transition)
-                  .style("opacity",1);
-                  return true;
+                  if (f.nomination.award!=award_mouse) {
+                    xC=parseFloat(d3.select(this).attr("cx"));
+                    yC=parseFloat(d3.select(this).attr("cy"));
+                    id=parseFloat(d3.select(this).attr("id"));
+                    textDisplay.append("text")
+                    .attr("x",xC)
+                    .attr("y",yC)
+                    .attr("pointer-events","none")
+                    .text(function(){
+                      return f.name;
+                    })
+                    .style("opacity",0)
+                    .transition()
+                    .duration(transition)
+                    .style("opacity",1);
+                    return true;
+                  }
                 }
-              }
-            })
-            .transition()
-            .duration(transition)
-            .style("opacity", 1);
-            return true;
-          }
-        })
-        .transition()
-        .duration(transition)
-        .style("stroke","black")
-        .style("stroke-width","1")
-        .style("opacity", 1);
+              })
+              .transition()
+              .duration(transition)
+              .style("opacity", 1);
+              return true;
+            }
+          })
+          .transition()
+          .duration(transition)
+          .style("stroke","black")
+          .style("stroke-width","1")
+          .style("opacity", 1);
+        }
       }
-}
       function mouse_out_legend() {
         d3.selectAll("circle").transition()
         .duration(transition).style("opacity",1).attr("r",r);
@@ -440,99 +440,99 @@
           d3.selectAll("rect").style("fill-opacity",0.1);
           for (var i=0;i<network.nodes.length;i++){
             data_to_remove.nodes.push(network.nodes[i].id)
+          }
+
+          data_to_remove.links=[];
+          for (var k=0;k<data_to_remove.nodes.length;k++){
+            for (var j=0;j<network.links.length;j++){
+              if(network.links[j].source.id===data_to_remove.nodes[k] || network.links[j].target.id===data_to_remove.nodes[k]){
+                data_to_remove.links.push(network.links[j].id);
               }
-
-              data_to_remove.links=[];
-              for (var k=0;k<data_to_remove.nodes.length;k++){
-                for (var j=0;j<network.links.length;j++){
-                  if(network.links[j].source.id===data_to_remove.nodes[k] || network.links[j].target.id===data_to_remove.nodes[k]){
-                    data_to_remove.links.push(network.links[j].id);
-                  }
-                }
-              }
-        /*  for (var j=0;j<network.links.length-10;j++){
-            data_to_remove.links.push(network.links[i].id)
-          }*/
-            }
-
-        else {
-          data_to_remove ={"nodes":[],"links":[]};
-          d3.selectAll("rect").style("fill-opacity",1);
-
-        }
-
-
-        restart(data_to_remove);
-
-      });
-
-      all.append("text")
-      .attr("x", 25)
-      .attr("y",10)
-      .attr("dy", ".35em")
-      .style("text-anchor", "left")
-      .text("All")
-
-      // draw legend
-      var legend = infos.append("svg").attr("height","45%").selectAll(".legend")
-      .data(color.domain())
-      .enter().append("g")
-      .attr("class", "legend")
-      .attr("transform", (d, i) => { return "translate(0," + i * 22 + ")"; });
-
-      // draw legend colored rectangles
-      legend.append("rect")
-      .attr("x", 1)
-      .attr("y",0)
-      .attr("width", 18)
-      .attr("height", 18)
-      .attr("fill", color)
-      .attr("stroke",color)
-      .attr("stroke-width",2)
-      .style("fill-opacity",1)
-      .on("click", function(d){
-        if (d3.select(this).style("fill-opacity")==1) {
-          d3.select(this).style("fill-opacity",0.1)
-        }
-        else {
-          d3.select(this).style("fill-opacity",1)
-        }
-        for (var i=0;i<network.nodes.length;i++){
-          if (network.nodes[i].nomination.award===d){
-            if (data_to_remove.nodes.includes(network.nodes[i].id)){
-              data_to_remove.nodes.splice(data_to_remove.nodes.indexOf(network.nodes[i].id),1);
-            }
-            else {
-              data_to_remove.nodes.push(network.nodes[i].id)
             }
           }
-        }
-        data_to_remove.links=[];
-        for (var k=0;k<data_to_remove.nodes.length;k++){
-          for (var j=0;j<network.links.length;j++){
-            if(network.links[j].source.id===data_to_remove.nodes[k] || network.links[j].target.id===data_to_remove.nodes[k]){
-              data_to_remove.links.push(network.links[j].id);
-            }
+          /*  for (var j=0;j<network.links.length-10;j++){
+          data_to_remove.links.push(network.links[i].id)
+        }*/
+      }
+
+      else {
+        data_to_remove ={"nodes":[],"links":[]};
+        d3.selectAll("rect").style("fill-opacity",1);
+
+      }
+
+
+      restart(data_to_remove);
+
+    });
+
+    all.append("text")
+    .attr("x", 25)
+    .attr("y",10)
+    .attr("dy", ".35em")
+    .style("text-anchor", "left")
+    .text("All")
+
+    // draw legend
+    var legend = infos.append("svg").attr("height","45%").selectAll(".legend")
+    .data(color.domain())
+    .enter().append("g")
+    .attr("class", "legend")
+    .attr("transform", (d, i) => { return "translate(0," + i * 22 + ")"; });
+
+    // draw legend colored rectangles
+    legend.append("rect")
+    .attr("x", 1)
+    .attr("y",0)
+    .attr("width", 18)
+    .attr("height", 18)
+    .attr("fill", color)
+    .attr("stroke",color)
+    .attr("stroke-width",2)
+    .style("fill-opacity",1)
+    .on("click", function(d){
+      if (d3.select(this).style("fill-opacity")==1) {
+        d3.select(this).style("fill-opacity",0.1)
+      }
+      else {
+        d3.select(this).style("fill-opacity",1)
+      }
+      for (var i=0;i<network.nodes.length;i++){
+        if (network.nodes[i].nomination.award===d){
+          if (data_to_remove.nodes.includes(network.nodes[i].id)){
+            data_to_remove.nodes.splice(data_to_remove.nodes.indexOf(network.nodes[i].id),1);
+          }
+          else {
+            data_to_remove.nodes.push(network.nodes[i].id)
           }
         }
+      }
+      data_to_remove.links=[];
+      for (var k=0;k<data_to_remove.nodes.length;k++){
+        for (var j=0;j<network.links.length;j++){
+          if(network.links[j].source.id===data_to_remove.nodes[k] || network.links[j].target.id===data_to_remove.nodes[k]){
+            data_to_remove.links.push(network.links[j].id);
+          }
+        }
+      }
 
-        restart(data_to_remove);
+      restart(data_to_remove);
 
-      })
-      .on("mouseover", mouse_on_legend)
-      .on("mouseout", mouse_out_legend);
+    })
+    .on("mouseover", mouse_on_legend)
+    .on("mouseout", mouse_out_legend);
 
-      // draw legend text
-      legend.append("text")
-      .attr("x", 25)
-      .attr("y",6)
-      .attr("dy", ".35em")
-      .style("text-anchor", "left")
-      .text(d => { return d;})
+    // draw legend text
+    legend.append("text")
+    .attr("x", 25)
+    .attr("y",6)
+    .attr("dy", ".35em")
+    .style("text-anchor", "left")
+    .text(d => { return d;})
 
-      function html_tooltip(node){
-        n=node.nomination.length
-        if (n<2){
+    function html_tooltip(node){
+      n=node.nomination.length
+      if (n<2){
         text=`<p><b>Name : </b>${node.name}</p>`+`<p><b>Nomination : </b></p>`+`<p>&emsp;${node.nomination[0].award} : ${node.nomination[0].movie}</p>`
 
       }
@@ -546,61 +546,61 @@
         }
 
       }
-        return text
-      }
+      return text
+    }
 
-    });
+  });
 
 
 
-    function format_to_network(data){
-  n=data.length;
-  network={"nodes":[],"links":[]}
-  for (var i=0;i<n;i++){
-    actor={};
-    actor.name=data[i].name;
-    actor.id=data[i].id;
+  function format_to_network(data){
+    n=data.length;
+    network={"nodes":[],"links":[]}
+    for (var i=0;i<n;i++){
+      actor={};
+      actor.name=data[i].name;
+      actor.id=data[i].id;
 
-    actor.nomination=data[i].nomination;
-    network.nodes.push(actor);
-    credtis_i=[];
-    credits_i=data[i].credits.crew.concat(data[i].credits.cast);
-    movies_i=[];
-    for (var j=i+1;j<n;j++){
-      movies_j=[];
-      credits_j= data[j].credits.crew.concat(data[j].credits.cast);
-      for (var l=0;l<credits_i.length;l++){
-        for (var m=0;m<credits_j.length;m++){
-          if (movies_i.includes(credits_i[l].id)==false && movies_j.includes(credits_j[m].id)==false && credits_i[l].id===credits_j[m].id){
-            link={};
-            movies_i.push(credits_i[l].id);
-            movies_j.push(credits_j[m].id);
-            link.source=data[i].id;
-            link.target=data[j].id;
-            link.movie=credits_i[l].original_title;
-            link.movie_id=credits_i[l].id;
-            network.links.push(link);
+      actor.nomination=data[i].nomination;
+      network.nodes.push(actor);
+      credtis_i=[];
+      credits_i=data[i].credits.crew.concat(data[i].credits.cast);
+      movies_i=[];
+      for (var j=i+1;j<n;j++){
+        movies_j=[];
+        credits_j= data[j].credits.crew.concat(data[j].credits.cast);
+        for (var l=0;l<credits_i.length;l++){
+          for (var m=0;m<credits_j.length;m++){
+            if (movies_i.includes(credits_i[l].id)==false && movies_j.includes(credits_j[m].id)==false && credits_i[l].id===credits_j[m].id){
+              link={};
+              movies_i.push(credits_i[l].id);
+              movies_j.push(credits_j[m].id);
+              link.source=data[i].id;
+              link.target=data[j].id;
+              link.movie=credits_i[l].original_title;
+              link.movie_id=credits_i[l].id;
+              network.links.push(link);
+            }
           }
         }
       }
     }
+    return network;
   }
-  return network;
-}
 
-function list_award(data){
-   output=[];
-   for (var i=0;i<data.length;i++){
-     if (!output.includes(data[i].nomination[0].award)){
-       output.push(data[i].nomination[0].award);
-     }
-   }
-   return output;
- }
+  function list_award(data){
+    output=[];
+    for (var i=0;i<data.length;i++){
+      if (!output.includes(data[i].nomination[0].award)){
+        output.push(data[i].nomination[0].award);
+      }
+    }
+    return output;
+  }
 
-    Array.prototype.diff = function(a) {
-      return this.filter(function(i) {return a.indexOf(i) < 0;});
-    };
+  Array.prototype.diff = function(a) {
+    return this.filter(function(i) {return a.indexOf(i) < 0;});
+  };
 
-    </script>
-  </body>
+  </script>
+</body>

@@ -137,7 +137,7 @@ fs.readFile('./data/nominees.txt', 'latin1', (err, data) => {
 
 									movie_credits.cast = movies.cast.filter( movie => {
 										let date = new Date(movie.release_date);
-										return (Number(date.getUTCFullYear()) + 5 >= 2017 && Number(date.getUTCFullYear()) < 2018) && typeof movie.character !== 'undefined' && movie.character.indexOf('Himself') === -1;
+										return (Number(date.getUTCFullYear()) + 5 >= 2017 && Number(date.getUTCFullYear()) < 2018) && typeof movie.character !== 'undefined' && movie.character.indexOf('Himself') === -1 && movie.character.length !== 0;
 									});
 
 									movie_credits.crew = movies.crew.filter( movie => {
