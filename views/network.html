@@ -50,7 +50,6 @@
   var margin = 50;
   var r=12;
   var transition=500;
-  var label="on"
 
   var main_div=d3.select("body").append("div");
 
@@ -58,7 +57,7 @@
   // add the tooltip area to the webpage
   let tooltip = infos.append("div").attr("class", "tooltip").style("opacity", 0);
   // create an svg to draw in
-  var svg = main_div.append("div").attr("class","chart").style("width","70%").style("height","1000px")
+  var svg = main_div.append("div").attr("class","chart").style("width","60%").style("height","1000px")
   .append("svg")
   .attr("viewBox", function(){return String(-width/2)+" "+String(-height/2)+" "+String(width)+" "+String(height)})
 
@@ -69,19 +68,19 @@
 
   //repartition démelage
   var simulation = d3.forceSimulation()
-  .force("link", d3.forceLink().id(function(d) {return d.id; }).strength(0.025))//.distance(function(d,i){return i*5}).strength(1))
+  .force("link", d3.forceLink().id(function(d) {return d.id; }).strength(0.025))//.distance(function(){return 1}).strength(1))
   .force("charge", d3.forceCollide().radius(35))
   //     .force("r", d3.forceRadial(function(d)  {return (19-color.domain().indexOf(d.nomination.award))*50;}))
   .force("center", d3.forceCenter(0,0))
 
-
+  var color=d3.scaleOrdinal(d3.schemeCategory20);
 
   d3.json("/database.json", function(json) {
 
 
     var network=format_to_network(json);
     var awards=list_award(json);
-var color=d3.scaleOrdinal(d3.schemeCategory20).domain(awards);
+
     // set the nodes
     var nodes = network.nodes;
     // links between nodes
@@ -191,7 +190,7 @@ var color=d3.scaleOrdinal(d3.schemeCategory20).domain(awards);
     .attr("r", r)
     .attr("id", function(d) { return "_" + d.id; })
     .attr("fill", function(d){
-      return color(d.nomination[0].award)
+      return color(d.nomination.award)
     })
     .attr('stroke', "black")
     .on("mouseover", mouse_on)
@@ -210,9 +209,6 @@ var color=d3.scaleOrdinal(d3.schemeCategory20).domain(awards);
     newLink = link.enter()
     .append("path")
     .attr("class", "link")
-    .attr("id",function(d) {
-      return d.id;
-    })
     .style("stroke","grey")
     .style("stroke-width","0.7")
     .style("pointer-events", "none");
@@ -245,13 +241,32 @@ var color=d3.scaleOrdinal(d3.schemeCategory20).domain(awards);
   }
 
   function mouse_on(d){
-    node_display=[];
+
     simulation.stop();
     tooltip.transition()
     .duration(transition)
     .style("opacity", 0.5);
     tooltip.html(html_tooltip(d))
     .style("left", "5px")
+    .style("background", function() {
+      return color(d.nomination[0].award);
+    })
+    .style("height",function(){
+      n=d.nomination.length
+      if (n<2){
+        a=d.nomination[0].award.length+d.nomination[0].movie.length+3;
+        count=(a-a%50)/50+1+6; // Nombre de lignes des awards
+      }
+      else{
+        count=0;
+        for (var i=0;i<n;i++){
+          a=d.nomination[i].movie.length+d.nomination[i].award.length+3;
+          count=count+(a-a%50)/50+2;
+        }
+        count=count+3+2;
+      }
+      return String(count*12)+'px'
+    })
     .style("top", "15px");
     name_mouse=d.name;
     d3.selectAll("circle").style("opacity", .1);
@@ -272,23 +287,20 @@ var color=d3.scaleOrdinal(d3.schemeCategory20).domain(awards);
             if(d.source.id === f.id ||  d.target.id === f.id) {
               name_node=f.name;
               if (name_node!=name_mouse) {
-                if (!node_display.includes(name_node)){
-                xC=parseFloat(d3.select(this).attr("cx"))+r+1;
-                yC=parseFloat(d3.select(this).attr("cy"))+4;
+                xC=parseFloat(d3.select(this).attr("cx"));
+                yC=parseFloat(d3.select(this).attr("cy"));
                 id=parseFloat(d3.select(this).attr("id"));
                 textDisplay.append("text")
                 .attr("x",xC)
                 .attr("y",yC)
                 .attr("pointer-events","none")
                 .text(function(f){return name_node;})
-                node_display.push(name_node);
-              }}
+              }
               return true;
             }
           })
           .style("opacity", 1);
 
-          if(label==="on"){
           path=(d3.select(this).attr("d")).split(",");
 
           xA=parseFloat(path[0].split("M")[1]);
@@ -310,7 +322,7 @@ var color=d3.scaleOrdinal(d3.schemeCategory20).domain(awards);
           .append("textPath")
           .attr("xlink:href",function(d,i) { return "#" + d.id;})
           .text(function(d){return d.movie;})
-          .style("pointer-events","none");}
+          .style("pointer-events","none");
 
           /*  textDisplay.append("text")
 
@@ -340,7 +352,6 @@ var color=d3.scaleOrdinal(d3.schemeCategory20).domain(awards);
     }
 
     function mouse_on_legend(d) {
-      node_display=[];
       if(d3.select(this).style("fill-opacity")==1){
         award_mouse=d;
         textDisplay=svg.append("g").attr("class", "text_link")
@@ -353,11 +364,10 @@ var color=d3.scaleOrdinal(d3.schemeCategory20).domain(awards);
         .duration(transition).style("opacity", .1);
         svg.selectAll("circle")
         .filter( function(d){
-          var searchNomination = d.nomination.filter( nomination => { return nomination.award === award_mouse; });
-          if (searchNomination.length !== 0){
-            if (!node_display.includes(d.name)){
-              xC=parseFloat(d3.select(this).attr("cx"))+r+1;
-              yC=parseFloat(d3.select(this).attr("cy"))+4;
+          if (d.nomination.award === award_mouse){
+
+            xC=parseFloat(d3.select(this).attr("cx"));
+            yC=parseFloat(d3.select(this).attr("cy"));
             id=parseFloat(d3.select(this).attr("id"));
 
             textDisplay.append("text")
@@ -371,7 +381,6 @@ var color=d3.scaleOrdinal(d3.schemeCategory20).domain(awards);
             .transition()
             .duration(transition)
             .style("opacity",1);
-          node_display.push(d.name);}
             return true;
           }
         })
@@ -381,16 +390,13 @@ var color=d3.scaleOrdinal(d3.schemeCategory20).domain(awards);
 
         svg.selectAll(".link")
         .filter(function(d) {
-          var searchNominationInSource = d.source.nomination.filter( nomination => { return nomination.award === award_mouse; });
-          var searchNominationInTarget = d.target.nomination.filter( nomination => { return nomination.award === award_mouse; });
-          if(searchNominationInSource.length !== 0 || searchNominationInTarget.length !== 0) {
+          if(d.source.nomination.award === award_mouse || d.target.nomination.award === award_mouse) {
             d3.selectAll("circle").filter(function(f) {
               if(d.source.id === f.id ||  d.target.id === f.id) {
-                var searchNomination = f.nomination.filter( nomination => { return nomination.award !== award_mouse; });
-                if (searchNomination.length !== 0) {
-                    if (!node_display.includes(f.name)){
-                      xC=parseFloat(d3.select(this).attr("cx"))+r+1;
-                      yC=parseFloat(d3.select(this).attr("cy"))+4;
+
+                if (f.nomination.award!=award_mouse) {
+                  xC=parseFloat(d3.select(this).attr("cx"));
+                  yC=parseFloat(d3.select(this).attr("cy"));
                   id=parseFloat(d3.select(this).attr("id"));
                   textDisplay.append("text")
                   .attr("x",xC)
@@ -403,7 +409,6 @@ var color=d3.scaleOrdinal(d3.schemeCategory20).domain(awards);
                   .transition()
                   .duration(transition)
                   .style("opacity",1);
-                node_display.push(f.name);}
                   return true;
                 }
               }
@@ -474,39 +479,10 @@ var color=d3.scaleOrdinal(d3.schemeCategory20).domain(awards);
     .attr("dy", ".35em")
     .style("text-anchor", "left")
     .text("All")
-    //active label :
-    var label_activation=infos.append("svg").attr("height","5%");
 
-    label_activation.append("rect")
-    .attr("x", 1)
-    .attr("y",1)
-    .attr("width", 18)
-    .attr("height", 18)
-    .attr("fill", 'black')
-    .attr("stroke",'black')
-    .attr("stroke-width",2)
-    .style("fill-opacity",1)
-    .on("click", function(d){
-      if (d3.select(this).style("fill-opacity")==1) {
-        d3.select(this).style("fill-opacity",0);
-        label="off"
-        }
-      else {
-        label="on"
-        d3.select(this).style("fill-opacity",1);
-      }
-
-    });
-
-    label_activation.append("text")
-    .attr("x", 25)
-    .attr("y",10)
-    .attr("dy", ".35em")
-    .style("text-anchor", "left")
-    .text("Label on links")
     // draw legend
-    var legend = infos.append("svg").attr("height","60%").selectAll(".legend")
-    .data(awards)
+    var legend = infos.append("svg").attr("height","45%").selectAll(".legend")
+    .data(color.domain())
     .enter().append("g")
     .attr("class", "legend")
     .attr("transform", (d, i) => { return "translate(0," + i * 22 + ")"; });
@@ -529,7 +505,7 @@ var color=d3.scaleOrdinal(d3.schemeCategory20).domain(awards);
         d3.select(this).style("fill-opacity",1)
       }
       for (var i=0;i<network.nodes.length;i++){
-        if (network.nodes[i].nomination[0].award===d){
+        if (network.nodes[i].nomination.award===d){
           if (data_to_remove.nodes.includes(network.nodes[i].id)){
             data_to_remove.nodes.splice(data_to_remove.nodes.indexOf(network.nodes[i].id),1);
           }
@@ -564,10 +540,8 @@ var color=d3.scaleOrdinal(d3.schemeCategory20).domain(awards);
       n=node.nomination.length
       if (n<2){
         text=`<p><b>Name : </b>${node.name}</p>`+`<p><b>Nomination : </b></p>`+`<p>&emsp;${node.nomination[0].award} : ${node.nomination[0].movie}</p>`
-
       }
       else{
-        console.log("hey")
         text=`<p><b>Name : </b>`+node.name+`</p>`+`<p><b>Films : </b></p>`
         for (var i=0;i<n;i++){
           current_movie=node.nomination[i].movie;
@@ -606,7 +580,6 @@ var color=d3.scaleOrdinal(d3.schemeCategory20).domain(awards);
               link.target=data[j].id;
               link.movie=credits_i[l].original_title;
               link.movie_id=credits_i[l].id;
-              link.id=data[i].id+""+data[j].id+""+credits_i[l].id;
               network.links.push(link);
             }
           }
