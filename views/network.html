@@ -73,14 +73,14 @@
   //     .force("r", d3.forceRadial(function(d)  {return (19-color.domain().indexOf(d.nomination.award))*50;}))
   .force("center", d3.forceCenter(0,0))
 
-  var color=d3.scaleOrdinal(d3.schemeCategory20);
+
 
   d3.json("/database.json", function(json) {
 
 
     var network=format_to_network(json);
     var awards=list_award(json);
-
+var color=d3.scaleOrdinal(d3.schemeCategory20).domain(awards);
     // set the nodes
     var nodes = network.nodes;
     // links between nodes
@@ -190,7 +190,7 @@
     .attr("r", r)
     .attr("id", function(d) { return "_" + d.id; })
     .attr("fill", function(d){
-      return color(d.nomination.award)
+      return color(d.nomination[0].award)
     })
     .attr('stroke', "black")
     .on("mouseover", mouse_on)
@@ -345,7 +345,7 @@
         .duration(transition).style("opacity", .1);
         svg.selectAll("circle")
         .filter( function(d){
-          if (d.nomination.award === award_mouse){
+          if (d.nomination[0].award === award_mouse){
 
             xC=parseFloat(d3.select(this).attr("cx"));
             yC=parseFloat(d3.select(this).attr("cy"));
@@ -371,11 +371,11 @@
 
         svg.selectAll(".link")
         .filter(function(d) {
-          if(d.source.nomination.award === award_mouse || d.target.nomination.award === award_mouse) {
+          if(d.source.nomination[0].award === award_mouse || d.target.nomination[0].award === award_mouse) {
             d3.selectAll("circle").filter(function(f) {
               if(d.source.id === f.id ||  d.target.id === f.id) {
 
-                if (f.nomination.award!=award_mouse) {
+                if (f.nomination[0].award!=award_mouse) {
                   xC=parseFloat(d3.select(this).attr("cx"));
                   yC=parseFloat(d3.select(this).attr("cy"));
                   id=parseFloat(d3.select(this).attr("id"));
@@ -462,8 +462,8 @@
     .text("All")
 
     // draw legend
-    var legend = infos.append("svg").attr("height","45%").selectAll(".legend")
-    .data(color.domain())
+    var legend = infos.append("svg").attr("height","60%").selectAll(".legend")
+    .data(awards)
     .enter().append("g")
     .attr("class", "legend")
     .attr("transform", (d, i) => { return "translate(0," + i * 22 + ")"; });
@@ -486,7 +486,7 @@
         d3.select(this).style("fill-opacity",1)
       }
       for (var i=0;i<network.nodes.length;i++){
-        if (network.nodes[i].nomination.award===d){
+        if (network.nodes[i].nomination[0].award===d){
           if (data_to_remove.nodes.includes(network.nodes[i].id)){
             data_to_remove.nodes.splice(data_to_remove.nodes.indexOf(network.nodes[i].id),1);
           }
