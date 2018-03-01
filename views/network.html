@@ -196,8 +196,13 @@
       .attr("class", "node")
       .attr("r", r)
       .attr("id", function(d) { return "_" + d.id; })
-      .attr("fill", function(d){
-        return color(d.nomination[0].award)
+      .attr("fill", function(d) {
+        if (d.nomination.length>1) {
+          return "url(#grad"+String(d.id)
+        }
+        else {
+          return color(d.nomination[0].award);
+        }
       })
       .attr('stroke', "black")
       .on("mouseover", mouse_on)
@@ -562,7 +567,8 @@
         d3.select(this).style("fill-opacity",1)
       }
       for (var i=0;i<network.nodes.length;i++){
-        if (network.nodes[i].nomination[0].award===d){
+      var searchNomination = network.nodes[i].nomination.filter( nomination => { return nomination.award === d; });
+       if (searchNomination.length !== 0){
           if (data_to_remove.nodes.includes(network.nodes[i].id)){
             data_to_remove.nodes.splice(data_to_remove.nodes.indexOf(network.nodes[i].id),1);
           }
@@ -600,7 +606,6 @@
 
       }
       else{
-        console.log("hey")
         text=`<p><b>Name : </b>`+node.name+`</p>`+`<p><b>Films : </b></p>`
         for (var i=0;i<n;i++){
           current_movie=node.nomination[i].movie;
