@@ -20,8 +20,8 @@
     stroke-width: 1px;
   }
   .tooltip {
-    width: 200px;
-    height: 100px;
+    width: 300px;
+    height: 300px;
     pointer-events: none;
     text-align: left;
     padding: 5px;
@@ -77,14 +77,14 @@
 
   d3.json("/database.json", function(json) {
 
-    var init_award=list_award(json);
-    var network=format_to_network(json,init_award);
+
+    var network=format_to_network(json);
+    var awards=list_award(json);
 
     // set the nodes
     var nodes = network.nodes;
     // links between nodes
     var links = network.links;
-
 
     // add the nodes to the simulation and
     // tell it what to do on each tick
@@ -140,8 +140,8 @@
     .attr("class", "node")
     .attr("r", r)
     .attr("id", function(d) { return "_" + d.id; })
-    .attr("fill", function(d) {
-      return color(d.nomination.award);
+    .attr("fill", function(d) {if (d.nomination.length>1){return "black";}
+      else{return color(d.nomination[0].award);}
     })
     .attr('stroke', "black")
     .on("mouseover", mouse_on)
@@ -238,11 +238,12 @@
     }
 
     function mouse_on(d){
+
       simulation.stop();
       tooltip.transition()
       .duration(transition)
       .style("opacity", 0.5);
-      tooltip.html(`<p><b>Name : </b>${d.name}</p>`+`<p><b>Film : </b>${d.nomination.movie}</p>`+`<p><b>Nomination : </b>${d.nomination.award}</p>`)
+      tooltip.html(html_tooltip(d))
       .style("left", "5px")
       .style("top", "15px");
       name_mouse=d.name;
@@ -528,63 +529,74 @@
       .attr("dy", ".35em")
       .style("text-anchor", "left")
       .text(d => { return d;})
+
+      function html_tooltip(node){
+        n=node.nomination.length
+        if (n<2){
+        text=`<p><b>Name : </b>${node.name}</p>`+`<p><b>Nomination : </b></p>`+`<p>&emsp;${node.nomination[0].award} : ${node.nomination[0].movie}</p>`
+
+      }
+      else{
+        console.log("hey")
+        text=`<p><b>Name : </b>`+node.name+`</p>`+`<p><b>Films : </b></p>`
+        for (var i=0;i<n;i++){
+          current_movie=node.nomination[i].movie;
+          current_award=node.nomination[i].award
+          text=text+`<p>&emsp;`+current_award+` : `+current_movie+`</p>`
+        }
+
+      }
+        return text
+      }
+
     });
 
 
 
-    function format_to_network(data,choice){
-      n=data.length;
+    function format_to_network(data){
+  n=data.length;
+  network={"nodes":[],"links":[]}
+  for (var i=0;i<n;i++){
+    actor={};
+    actor.name=data[i].name;
+    actor.id=data[i].id;
 
-      network={"nodes":[],"links":[]}
-      for (var i=0;i<n;i++){
-        actor={};
-
-        if (choice.includes(data[i].nomination[0].award)){
-          actor.name=data[i].name;
-          actor.id=data[i].id;
-          actor.nomination=data[i].nomination[0];
-          network.nodes.push(actor);
-          credtis_i=[];
-          credits_i=data[i].credits.crew.concat(data[i].credits.cast);
-          movies_i=[];
-          for (var j=i+1;j<n;j++){
-            if (choice.includes(data[j].nomination[0].award)){
-              movies_j=[];
-              credits_j= data[j].credits.crew.concat(data[j].credits.cast);
-
-              for (var l=0;l<credits_i.length;l++){
-                for (var m=0;m<credits_j.length;m++){
-                  if (movies_i.includes(credits_i[l].id)==false && movies_j.includes(credits_j[m].id)==false && credits_i[l].id===credits_j[m].id){
-                    link={};
-                    movies_i.push(credits_i[l].id);
-                    movies_j.push(credits_j[m].id);
-                    link.source=data[i].id;
-                    link.target=data[j].id;
-                    link.movie=credits_i[l].original_title;
-                    link.movie_id=credits_i[l].id;
-                    link.id=data[i].id+"_"+data[j].id+"_"+credits_i[l].id;
-                    network.links.push(link);
-                  }
-                }
-              }
-            }
+    actor.nomination=data[i].nomination;
+    network.nodes.push(actor);
+    credtis_i=[];
+    credits_i=data[i].credits.crew.concat(data[i].credits.cast);
+    movies_i=[];
+    for (var j=i+1;j<n;j++){
+      movies_j=[];
+      credits_j= data[j].credits.crew.concat(data[j].credits.cast);
+      for (var l=0;l<credits_i.length;l++){
+        for (var m=0;m<credits_j.length;m++){
+          if (movies_i.includes(credits_i[l].id)==false && movies_j.includes(credits_j[m].id)==false && credits_i[l].id===credits_j[m].id){
+            link={};
+            movies_i.push(credits_i[l].id);
+            movies_j.push(credits_j[m].id);
+            link.source=data[i].id;
+            link.target=data[j].id;
+            link.movie=credits_i[l].original_title;
+            link.movie_id=credits_i[l].id;
+            network.links.push(link);
           }
         }
       }
-      return network;
     }
+  }
+  return network;
+}
 
-
-
-    function list_award(data){
-      output=[];
-      for (var i=0;i<data.length;i++){
-        if (!output.includes(data[i].nomination[0].award)){
-          output.push(data[i].nomination[0].award);
-        }
-      }
-      return output;
-    }
+function list_award(data){
+   output=[];
+   for (var i=0;i<data.length;i++){
+     if (!output.includes(data[i].nomination[0].award)){
+       output.push(data[i].nomination[0].award);
+     }
+   }
+   return output;
+ }
 
     Array.prototype.diff = function(a) {
       return this.filter(function(i) {return a.indexOf(i) < 0;});
