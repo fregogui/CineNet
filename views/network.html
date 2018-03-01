@@ -86,6 +86,13 @@
     // links between nodes
     var links = network.links;
 
+    for (var i=0; i<links.length; i++) {
+      if (i != 0 && links[i].source == links[i-1].source && links[i].target == links[i-1].target) {
+        links[i].linknum = links[i-1].linknum + 1;
+      }
+      else {links[i].linknum = 1;};
+    };
+
     // add the nodes to the simulation and
     // tell it what to do on each tick
     simulation
@@ -107,11 +114,15 @@
     // add the curved links to our graphic
     var link = svg.append("g").attr("class","links").selectAll(".link")
 
-    .data(links, function(d){return d.id;})
+    .data(links, function(d){
+      return d.id;
+    })
     .enter()
     .append("path")
     .attr("class", "link")
-    .attr("id",function(d) { return d.id; })
+    .attr("id",function(d) {
+      return d.id;
+    })
     .style("stroke","grey")
     .style("stroke-width","0.7")
     .style("pointer-events", "none");
@@ -153,7 +164,7 @@
 
   // links are drawn as curved paths between nodes
   function positionLink(d) {
-    var offset = 30;
+    var offset = Math.pow(-1, d.linknum)*100/d.linknum;
     var midpoint_x = (d.source.x + d.target.x) / 2;
     var midpoint_y = (d.source.y + d.target.y) / 2;
     var dx = (d.target.x - d.source.x);
@@ -169,8 +180,6 @@
     "S" + offSetX + "," + offSetY +
     " " + target_x + "," + target_y;
   }
-
-
 
   function restart(data_to_remove) {
     //update nodes (remove or add)
@@ -206,19 +215,13 @@
     ;
     link = link.merge(newLink);
 
-
     //restart forces
-
-
-
     simulation.force("link").links(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}));
     simulation.force("charge", d3.forceCollide().radius(45));
     simulation.force("center", d3.forceCenter(0,0));
     //simulation.on("tick",ticked);
     simulation.alpha(0.5).alphaTarget(0).restart();
   }
-
-
 
   function dragstarted(d) {
     if (!d3.event.active) simulation.alphaTarget(0.3).restart();
@@ -258,9 +261,6 @@
     .data(links
       .filter(function(d){return d.source.id === touchID || d.target.id === touchID}), function(d){return d.id;});
 
-
-      //regarder : http://jsfiddle.net/bc4um7pc/  https://stackoverflow.com/questions/20202424/how-to-have-a-text-label-on-links-in-d3-force-directed-graphs
-
       svg.selectAll(".link")
       .filter(function(d) {
         if(d.source.id === touchID || d.target.id === touchID) {
@@ -275,195 +275,183 @@
                 .attr("x",xC)
                 .attr("y",yC)
                 .attr("pointer-events","none")
-                .text(function(f){return name_node;})}
-                return true;
+                .text(function(f){return name_node;})
               }
-            })
+              return true;
+            }
+          })
+          .style("opacity", 1);
 
-            .style("opacity", 1);
+          path=(d3.select(this).attr("d")).split(",");
 
-            path=(d3.select(this).attr("d")).split(",");
+          xA=parseFloat(path[0].split("M")[1]);
+          xB=parseFloat(path[2].split(" ")[1]);
+          yA=parseFloat(path[1].split("S")[0]);
+          yB=parseFloat(path[3]);
+          xT=xA+(xB-xA)/2.0;
+          yT=yA+(yB-yA)/2.0;
+          movieT=d.movie;
+          theta=(180.0/Math.PI)*Math.acos(Math.abs(xB-xA)/Math.sqrt((yB-yA)*(yB-yA)+(xB-xA)*(xB-xA))/2.0);
+          linktext.enter().append("g")
+          .append("text")
+          .attr("class", "linklabel")
+          .style("font-size", "13px")
+          .attr("x", "50")
+          .attr("y", "-20")
+          .attr("text-anchor", "start")
+          .style("fill","#000")
+          .append("textPath")
+          .attr("xlink:href",function(d,i) { return "#" + d.id;})
+          .text(function(d){return d.movie;})
+          .style("pointer-events","none");
 
-            xA=parseFloat(path[0].split("M")[1]);
-            xB=parseFloat(path[2].split(" ")[1]);
-            yA=parseFloat(path[1].split("S")[0]);
-            yB=parseFloat(path[3]);
-            xT=xA+(xB-xA)/2.0;
-            yT=yA+(yB-yA)/2.0;
-            movieT=d.movie;
-            theta=(180.0/Math.PI)*Math.acos(Math.abs(xB-xA)/Math.sqrt((yB-yA)*(yB-yA)+(xB-xA)*(xB-xA))/2.0);
-            linktext.enter().append("g")
-            .append("text")
-            .attr("class", "linklabel")
-            .style("font-size", "13px")
-            .attr("x", "50")
-            .attr("y", "-20")
-            .attr("text-anchor", "start")
-            .style("fill","#000")
-            .append("textPath")
-            .attr("xlink:href",function(d,i) { return "#" + d.id;})
-            .text(function(d){return d.movie;})
-            .style("pointer-events","none");
+          /*  textDisplay.append("text")
 
+          .attr("x",xT)
+          .attr("y",yT)
 
+          .attr("pointer-events","none")
+          .text(function(d){return movieT});*/
+          return true;
+        }
+      })
+      .style("stroke","black")
+      .style("stroke-width","3")
+      .style("opacity", 1);
+    }
 
+    function mouse_out() {
+      tooltip.transition()
+      .duration(transition)
+      .style("opacity", 0);
 
-            /*  textDisplay.append("text")
+      d3.selectAll("circle").style("opacity",1).attr("r",r);
+      d3.selectAll(".link").style("opacity",1).style("stroke","grey").style("stroke-width","0.7");
+      svg.selectAll(".nodetext").remove();
+      svg.selectAll(".linktext").remove();
+      simulation.restart();
+    }
 
-            .attr("x",xT)
-            .attr("y",yT)
+    function mouse_on_legend(d) {
+      if(d3.select(this).style("fill-opacity")==1){
+        award_mouse=d;
+        textDisplay=svg.append("g").attr("class", "text_link")
+        simulation.stop();
+        d3.selectAll("circle")
+        .transition()
+        .duration(transition).style("opacity", .1);
+        d3.selectAll(".link")
+        .transition()
+        .duration(transition).style("opacity", .1);
+        svg.selectAll("circle")
+        .filter( function(d){
+          if (d.nomination.award === award_mouse){
 
+            xC=parseFloat(d3.select(this).attr("cx"));
+            yC=parseFloat(d3.select(this).attr("cy"));
+            id=parseFloat(d3.select(this).attr("id"));
+
+            textDisplay.append("text")
+            .attr("x",xC)
+            .attr("y",yC)
             .attr("pointer-events","none")
-            .text(function(d){return movieT});*/
+            .text(function(){
+              return d.name;
+            })
+            .style("opacity",0)
+            .transition()
+            .duration(transition)
+            .style("opacity",1);
             return true;
           }
-        }).style("stroke","black")
-        .style("stroke-width","3")
+        })
+        .transition()
+        .duration(transition)
+        .style("opacity", 1);
 
+        svg.selectAll(".link")
+        .filter(function(d) {
+          if(d.source.nomination.award === award_mouse || d.target.nomination.award === award_mouse) {
+            d3.selectAll("circle").filter(function(f) {
+              if(d.source.id === f.id ||  d.target.id === f.id) {
 
+                if (f.nomination.award!=award_mouse) {
+                  xC=parseFloat(d3.select(this).attr("cx"));
+                  yC=parseFloat(d3.select(this).attr("cy"));
+                  id=parseFloat(d3.select(this).attr("id"));
+                  textDisplay.append("text")
+                  .attr("x",xC)
+                  .attr("y",yC)
+                  .attr("pointer-events","none")
+                  .text(function(){
+                    return f.name;
+                  })
+                  .style("opacity",0)
+                  .transition()
+                  .duration(transition)
+                  .style("opacity",1);
+                  return true;
+                }
+              }
+            })
+            .transition()
+            .duration(transition)
+            .style("opacity", 1);
+            return true;
+          }
+        })
+        .transition()
+        .duration(transition)
+        .style("stroke","black")
+        .style("stroke-width","1")
         .style("opacity", 1);
       }
+    }
+    function mouse_out_legend() {
+      d3.selectAll("circle").transition()
+      .duration(transition).style("opacity",1).attr("r",r);
+      d3.selectAll(".link").transition()
+      .duration(transition).style("opacity",1).style("stroke","grey").style("stroke-width","0.7");
+      svg.selectAll(".text_link").remove();
+      simulation.restart();
+    }
 
-      function mouse_out() {
-        tooltip.transition()
-        .duration(transition)
-        .style("opacity", 0);
+    /* init an array in which we want to store nodes we will delete*/
+    var data_to_remove ={"nodes":[],"links":[]};
 
-        d3.selectAll("circle").style("opacity",1).attr("r",r);
-        d3.selectAll(".link").style("opacity",1).style("stroke","grey").style("stroke-width","0.7");
-        svg.selectAll(".nodetext").remove();
-        svg.selectAll(".linktext").remove();
-        simulation.restart();
-      }
+    var all=infos.append("svg").attr("height","5%");
 
-      function mouse_on_legend(d) {
-        if(d3.select(this).style("fill-opacity")==1){
-          award_mouse=d;
-          textDisplay=svg.append("g").attr("class", "text_link")
-          simulation.stop();
-          d3.selectAll("circle")
-          .transition()
-          .duration(transition).style("opacity", .1);
-          d3.selectAll(".link")
-          .transition()
-          .duration(transition).style("opacity", .1);
-          svg.selectAll("circle")
-          .filter( function(d){
-            if (d.nomination.award === award_mouse){
+    all.append("rect")
+    .attr("x", 1)
+    .attr("y",1)
+    .attr("width", 18)
+    .attr("height", 18)
+    .attr("fill", 'black')
+    .attr("stroke",'black')
+    .attr("stroke-width",2)
+    .style("fill-opacity",1)
+    .on("click", function(d){
+      if (d3.select(this).style("fill-opacity")==1) {
 
-              xC=parseFloat(d3.select(this).attr("cx"));
-              yC=parseFloat(d3.select(this).attr("cy"));
-              id=parseFloat(d3.select(this).attr("id"));
+        d3.selectAll("rect").style("fill-opacity",0.1);
+        for (var i=0;i<network.nodes.length;i++){
+          data_to_remove.nodes.push(network.nodes[i].id)
+        }
 
-              textDisplay.append("text")
-              .attr("x",xC)
-              .attr("y",yC)
-              .attr("pointer-events","none")
-              .text(function(){return d.name;})
-              .style("opacity",0)
-              .transition()
-              .duration(transition)
-              .style("opacity",1);
-              return true;
-            };
-          })
-          .transition()
-          .duration(transition)
-
-          .style("opacity", 1);
-
-          svg.selectAll(".link")
-          .filter(function(d) {
-            if(d.source.nomination.award === award_mouse || d.target.nomination.award === award_mouse) {
-              d3.selectAll("circle").filter(function(f) {
-                if(d.source.id === f.id ||  d.target.id === f.id) {
-
-                  if (f.nomination.award!=award_mouse) {
-                    xC=parseFloat(d3.select(this).attr("cx"));
-                    yC=parseFloat(d3.select(this).attr("cy"));
-                    id=parseFloat(d3.select(this).attr("id"));
-                    textDisplay.append("text")
-                    .attr("x",xC)
-                    .attr("y",yC)
-                    .attr("pointer-events","none")
-                    .text(function(){
-                      return f.name;
-                    })
-                    .style("opacity",0)
-                    .transition()
-                    .duration(transition)
-                    .style("opacity",1);
-                    return true;
-                  }
-                }
-              })
-              .transition()
-              .duration(transition)
-              .style("opacity", 1);
-              return true;
+        data_to_remove.links=[];
+        for (var k=0;k<data_to_remove.nodes.length;k++){
+          for (var j=0;j<network.links.length;j++){
+            if(network.links[j].source.id===data_to_remove.nodes[k] || network.links[j].target.id===data_to_remove.nodes[k]){
+              data_to_remove.links.push(network.links[j].id);
             }
-          })
-          .transition()
-          .duration(transition)
-          .style("stroke","black")
-          .style("stroke-width","1")
-          .style("opacity", 1);
+          }
         }
       }
-      function mouse_out_legend() {
-        d3.selectAll("circle").transition()
-        .duration(transition).style("opacity",1).attr("r",r);
-        d3.selectAll(".link").transition()
-        .duration(transition).style("opacity",1).style("stroke","grey").style("stroke-width","0.7");
-        svg.selectAll(".text_link").remove();
-        simulation.restart();
-      }
-
-      /* init an array in which we want to store nodes we will delete*/
-
-      var data_to_remove ={"nodes":[],"links":[]};
-
-      var all=infos.append("svg").attr("height","5%");
-
-      all.append("rect")
-      .attr("x", 1)
-      .attr("y",1)
-      .attr("width", 18)
-      .attr("height", 18)
-      .attr("fill", 'black')
-      .attr("stroke",'black')
-      .attr("stroke-width",2)
-      .style("fill-opacity",1)
-      .on("click", function(d){
-        if (d3.select(this).style("fill-opacity")==1) {
-
-          d3.selectAll("rect").style("fill-opacity",0.1);
-          for (var i=0;i<network.nodes.length;i++){
-            data_to_remove.nodes.push(network.nodes[i].id)
-          }
-
-          data_to_remove.links=[];
-          for (var k=0;k<data_to_remove.nodes.length;k++){
-            for (var j=0;j<network.links.length;j++){
-              if(network.links[j].source.id===data_to_remove.nodes[k] || network.links[j].target.id===data_to_remove.nodes[k]){
-                data_to_remove.links.push(network.links[j].id);
-              }
-            }
-          }
-          /*  for (var j=0;j<network.links.length-10;j++){
-          data_to_remove.links.push(network.links[i].id)
-        }*/
-      }
-
       else {
         data_to_remove ={"nodes":[],"links":[]};
         d3.selectAll("rect").style("fill-opacity",1);
-
       }
-
-
       restart(data_to_remove);
-
     });
 
     all.append("text")
@@ -515,7 +503,6 @@
           }
         }
       }
-
       restart(data_to_remove);
 
     })
@@ -548,10 +535,7 @@
       }
       return text
     }
-
   });
-
-
 
   function format_to_network(data){
     n=data.length;
@@ -599,8 +583,10 @@
   }
 
   Array.prototype.diff = function(a) {
-    return this.filter(function(i) {return a.indexOf(i) < 0;});
+    return this.filter(function(i) {
+      return a.indexOf(i) < 0;
+    });
   };
 
-  </script>
+</script>
 </body>
