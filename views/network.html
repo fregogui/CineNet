@@ -391,16 +391,6 @@
         nodes:[],
         links:[]
       };
-      // svg.selectAll(".link")
-      // .each(function(l) {
-      //   if(l.source.id === d.id || l.target.id === d.id) {
-      //     d3.selectAll("circle").each(function(c) {
-      //       if(l.source.id === c.id || l.target.id === c.id) {
-      //         nodes_to_remove.links.push(l.id)
-      //       }
-      //     });
-      //   }
-      // });
 
       d3.selectAll('circle').each(function(c) {
         if (d !== c) {
