@@ -391,7 +391,6 @@
       if (clicked_node===0){
       data_to_remove=={"nodes":[],"links":[]};
 
-
       d3.selectAll('circle').each(function(c) {
         if (d !== c) {
           data_to_remove.nodes.push(c.id);
@@ -411,13 +410,12 @@
       });
 
       data_to_remove.links=[];
-        for (var k=0;k<data_to_remove.nodes.length;k++){
           for (var j=0;j<network.links.length;j++){
-            if(network.links[j].source.id===data_to_remove.nodes[k] || network.links[j].target.id===data_to_remove.nodes[k]){
+            if(network.links[j].source.id!=d.id && network.links[j].target.id!=d.id){
               data_to_remove.links.push(network.links[j].id);
             }
           }
-        }
+
       clicked_node=1;
       restart(data_to_remove);
     }
