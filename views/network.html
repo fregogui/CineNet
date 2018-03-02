@@ -10,6 +10,9 @@
   svg {
     width: 100%;
   }
+  .chart {
+    background-color: rgb(212, 202, 119);
+  }
   .link {
     fill: none;
     stroke: #ddd;
@@ -39,13 +42,20 @@
     float : right;
     vertical-align: top;
   }
+  h1 {
+    position: relative;
+    margin-left: 400px;
+    margin-top: -22px;
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  }
   </style>
 </head>
 
 <body>
   <div>
-    <input id="targetNode" name="targetNode" type="text" value="" placeholder="Enter an artist name" />
+    <input id="targetNode" name="targetNode" type="text" value="" placeholder="Enter an artist name" onkeyup="searchNominees()"/>
     <button onclick="search()">Search</button>
+    <h1>Academy Awards Nominees Network</h1>
   </div>
   <script>
   var width =1000,
@@ -736,8 +746,8 @@
 
     var userInput = document.getElementById("targetNode");
 
-    var theNode = d3.selectAll('circle').filter(function(d) {
-      return d.name === userInput.value
+    d3.selectAll('circle').filter(function(d) {
+      return d.name.toLowerCase() === userInput.value.toLowerCase();
     })
     .transition()
     .duration(transition)
@@ -745,6 +755,12 @@
     .attr('fill', function(d){
       return color(d.nomination[0].award)
     });
+  }
+
+  function searchNominees() {
+    var userInput = document.getElementById("targetNode");
+
+
   }
 
   function list_award(data){
