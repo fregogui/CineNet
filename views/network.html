@@ -11,7 +11,7 @@
     width: 100%;
   }
   .chart {
-    background-color: rgb(212, 202, 119);
+    background-color: #363537;
   }
   .link {
     fill: none;
@@ -59,7 +59,7 @@
   </div>
   <script>
   var width =1000,
-  height = 700,
+  height = 800,
   radius=35;
   var margin = 50;
   var r=12;
@@ -135,8 +135,7 @@
     .attr("id",function(d) {
       return d.id;
     })
-    .style("stroke","grey")
-    .style("stroke-width","0.7")
+.style("stroke","white").style("stroke-width","1")
     .style("pointer-events", "none");
     /*
     var linktext = svg.append("g").selectAll(".linkname")
@@ -236,8 +235,7 @@
       .attr("id",function(d) {
         return d.id;
       })
-      .style("stroke","grey")
-      .style("stroke-width","0.7")
+
       .style("pointer-events", "none");
       ;
       link = link.merge(newLink);
@@ -328,6 +326,7 @@
                   .attr("y",yC)
                   .attr("pointer-events","none")
                   .text(function(f){return name_node;})
+                  .style("fill","white")
                   node_display.push(name_node);
                 }
               }
@@ -354,11 +353,11 @@
             .attr("class", "linklabel")
             .attr("x",String(dist_demi))
             .attr("dy", "-5")
-            .attr("text-anchor", "start")
+            .attr("text-anchor", "middle")
             .append("textPath")
             .attr("xlink:href",function(d,i) {return "#" + String(d.id);})
 
-            .style("fill","black")
+            .style("fill","white")
             .style("font","roboto")
             .style("font-size", "15px")
             .style("pointer-events","none")
@@ -380,7 +379,7 @@
           return true;
         }
       })
-      .style("stroke","black")
+      .style("stroke","white")
       .style("stroke-width","3")
       .style("opacity", 1);
     }
@@ -391,7 +390,7 @@
       .style("opacity", 0);
 
       d3.selectAll("circle").style("opacity",1).attr("r",r);
-      d3.selectAll(".link").style("opacity",1).style("stroke","grey").style("stroke-width","0.7");
+      d3.selectAll(".link").style("opacity",1).style("stroke","white").style("stroke-width","1");
       svg.selectAll(".nodetext").remove();
       svg.selectAll(".linktext").remove();
       simulation.restart();
@@ -467,7 +466,8 @@
               .style("opacity",0)
               .transition()
               .duration(transition)
-              .style("opacity",1);
+              .style("opacity",1)
+              .style("fill","white");
               node_display.push(d.name);
             }
             return true;
@@ -500,7 +500,8 @@
                     .style("opacity",0)
                     .transition()
                     .duration(transition)
-                    .style("opacity",1);
+                    .style("opacity",1)
+                    .style("fill","white");
                     node_display.push(f.name);
                   }
                   return true;
@@ -515,7 +516,7 @@
         })
         .transition()
         .duration(transition)
-        .style("stroke","black")
+        .style("stroke","white")
         .style("stroke-width","1")
         .style("opacity", 1);
       }
@@ -525,7 +526,7 @@
       d3.selectAll("circle").transition()
       .duration(transition).style("opacity",1).attr("r",r);
       d3.selectAll(".link").transition()
-      .duration(transition).style("opacity",1).style("stroke","grey").style("stroke-width","0.7");
+      .duration(transition).style("opacity",1).style("stroke","white").style("stroke-width","1");
       svg.selectAll(".text_link").remove();
       simulation.restart();
     }
