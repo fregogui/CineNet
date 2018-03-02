@@ -208,6 +208,7 @@
       .attr('stroke', "black")
       .on("mouseover", mouse_on)
       .on("mouseout",mouse_out)
+      .on("click",click_on_node)
       .call(d3.drag()
       .on("start", dragstarted)
       .on("drag", dragged)
@@ -385,41 +386,47 @@
       svg.selectAll(".linktext").remove();
       simulation.restart();
     }
-
+    var clicked_node=0
     function click_on_node(d) {
-      var nodes_to_remove = {
-        nodes:[],
-        links:[]
-      };
+      if (clicked_node===0){
+      data_to_remove=={"nodes":[],"links":[]};
+
 
       d3.selectAll('circle').each(function(c) {
         if (d !== c) {
-          nodes_to_remove.nodes.push(c.id);
+          data_to_remove.nodes.push(c.id);
         }
       });
       d3.selectAll('.link').each(function(l) {
         if (l.source.id === d.id) {
-          nodes_to_remove.nodes = nodes_to_remove.nodes.filter( el => {
+          data_to_remove.nodes = data_to_remove.nodes.filter( el => {
             return el !== l.target.id;
           });
         }
         if (l.target.id === d.id) {
-          nodes_to_remove.nodes = nodes_to_remove.nodes.filter( el => {
+          data_to_remove.nodes = data_to_remove.nodes.filter( el => {
             return el !== l.source.id;
           });
         }
       });
 
-      for (var k=0;k<nodes_to_remove.nodes.length;k++){
-        for (var j=0;j<network.links.length;j++){
-          if(network.links[j].source.id===nodes_to_remove.nodes[k] || network.links[j].target.id===nodes_to_remove.nodes[k]){
-            nodes_to_remove.links.push(network.links[j].id);
+      data_to_remove.links=[];
+        for (var k=0;k<data_to_remove.nodes.length;k++){
+          for (var j=0;j<network.links.length;j++){
+            if(network.links[j].source.id===data_to_remove.nodes[k] || network.links[j].target.id===data_to_remove.nodes[k]){
+              data_to_remove.links.push(network.links[j].id);
+            }
           }
         }
-      }
-
-      restart(nodes_to_remove);
+      clicked_node=1;
+      restart(data_to_remove);
     }
+    else if (clicked_node===1){
+      data_to_remove={"nodes":[],"links":[]};
+      clicked_node=0;
+      restart(data_to_remove);
+    }
+  }
 
     function mouse_on_legend(d) {
       node_display=[];
@@ -531,7 +538,6 @@
     .style("fill-opacity",1)
     .on("click", function(d){
       if (d3.select(this).style("fill-opacity")==1) {
-
         d3.selectAll(".rectlegend").style("fill-opacity",0.1);
         d3.select(this).style("fill-opacity",0.1);
         for (var i=0;i<network.nodes.length;i++){
@@ -616,6 +622,7 @@
       else {
         d3.select(this).style("fill-opacity",1)
       }
+
       for (var i=0;i<network.nodes.length;i++){
         var searchNomination = network.nodes[i].nomination.filter( nomination => { return nomination.award === d; });
         if (searchNomination.length !== 0){
