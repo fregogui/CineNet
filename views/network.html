@@ -75,7 +75,7 @@
   var main_div=d3.select("body").append("div");
 
   var infos=main_div.append("div").attr("class","infos").style("width","30%").style("height","1000px");
-  var label_activation=infos.append("svg").attr("height","25");
+  var label_activation=infos.append("svg").attr("height","35");
   var all=infos.append("svg").attr("height","25");
 
   // create an svg to draw in
@@ -340,6 +340,7 @@
           })
           .style("opacity", 1);
 
+
           if(label==="on") {
 
             path=(d3.select(this).attr("d")).split(",");
@@ -386,7 +387,8 @@
       })
       .style("stroke","white")
       .style("stroke-width","3")
-      .style("opacity", 1);
+      .style("opacity", 1)
+      .style("pointer-events", "none");
     }
 
     function mouse_out() {
