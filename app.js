@@ -6,6 +6,7 @@ const app = express();
 
 app.use(express.static(path.join(__dirname, './collect-data/data')));
 app.use('/d3', express.static(path.join(__dirname, './node_modules/d3/build/d3.js')));
+app.use('/tools', express.static(path.join(__dirname, './utils')));
 
 app.get('/network', (req, res) => {
   res.sendFile(path.join(__dirname, '/views/network.html'));
