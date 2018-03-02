@@ -4,7 +4,7 @@
   <script src="/d3"></script>
   <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="/tools/awesomplete/awesomplete.css" />
-  <script src="/tools/awesomplete/awesomplete.js" async></script>
+  <script src="/tools/awesomplete/awesomplete.js"></script>
   <style>
   text {
     font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
@@ -56,7 +56,7 @@
 <body>
   <div>
     <input id="targetNode" name="targetNode" type="text" placeholder="Enter an artist name" onkeyup="suggestions()"/>
-    <button onclick="search()">Search</button>
+    <button id="buttonSearch" onclick="search()">Search</button>
     <h1>Academy Awards Nominees Network</h1>
   </div>
   <script>
@@ -74,7 +74,7 @@
 
   var infos=main_div.append("div").attr("class","infos").style("width","30%").style("height","1000px");
   var label_activation=infos.append("svg").attr("height","25");
-var all=infos.append("svg").attr("height","25");
+  var all=infos.append("svg").attr("height","25");
 
   // create an svg to draw in
   var svg = main_div.append("div").attr("class","chart").style("width","68%").style("height","1000px")
@@ -138,7 +138,7 @@ var all=infos.append("svg").attr("height","25");
     .attr("id",function(d) {
       return d.id;
     })
-.style("stroke","white").style("stroke-width","1")
+    .style("stroke","white").style("stroke-width","1")
     .style("pointer-events", "none");
     /*
     var linktext = svg.append("g").selectAll(".linkname")
@@ -401,42 +401,42 @@ var all=infos.append("svg").attr("height","25");
     var clicked_node=0
     function click_on_node(d) {
       if (clicked_node===0){
-      data_to_remove=={"nodes":[],"links":[]};
+        data_to_remove=={"nodes":[],"links":[]};
 
-      d3.selectAll('circle').each(function(c) {
-        if (d !== c) {
-          data_to_remove.nodes.push(c.id);
-        }
-      });
-      d3.selectAll('.link').each(function(l) {
-        if (l.source.id === d.id) {
-          data_to_remove.nodes = data_to_remove.nodes.filter( el => {
-            return el !== l.target.id;
-          });
-        }
-        if (l.target.id === d.id) {
-          data_to_remove.nodes = data_to_remove.nodes.filter( el => {
-            return el !== l.source.id;
-          });
-        }
-      });
-
-      data_to_remove.links=[];
-          for (var j=0;j<network.links.length;j++){
-            if(network.links[j].source.id!=d.id && network.links[j].target.id!=d.id){
-              data_to_remove.links.push(network.links[j].id);
-            }
+        d3.selectAll('circle').each(function(c) {
+          if (d !== c) {
+            data_to_remove.nodes.push(c.id);
           }
+        });
+        d3.selectAll('.link').each(function(l) {
+          if (l.source.id === d.id) {
+            data_to_remove.nodes = data_to_remove.nodes.filter( el => {
+              return el !== l.target.id;
+            });
+          }
+          if (l.target.id === d.id) {
+            data_to_remove.nodes = data_to_remove.nodes.filter( el => {
+              return el !== l.source.id;
+            });
+          }
+        });
 
-      clicked_node=1;
-      restart(data_to_remove);
+        data_to_remove.links=[];
+        for (var j=0;j<network.links.length;j++){
+          if(network.links[j].source.id!=d.id && network.links[j].target.id!=d.id){
+            data_to_remove.links.push(network.links[j].id);
+          }
+        }
+
+        clicked_node=1;
+        restart(data_to_remove);
+      }
+      else if (clicked_node===1){
+        data_to_remove={"nodes":[],"links":[]};
+        clicked_node=0;
+        restart(data_to_remove);
+      }
     }
-    else if (clicked_node===1){
-      data_to_remove={"nodes":[],"links":[]};
-      clicked_node=0;
-      restart(data_to_remove);
-    }
-  }
 
     function mouse_on_legend(d) {
       node_display=[];
@@ -613,7 +613,7 @@ var all=infos.append("svg").attr("height","25");
 
     // draw legend
     var legend = infos.append("svg").attr("height","425").selectAll(".legend")
-.data(awards).enter().append("g")
+    .data(awards).enter().append("g")
     .attr("class", "legend")
     .attr("transform", (d, i) => { return "translate(0," + i * 22 + ")"; });
 
@@ -768,6 +768,12 @@ var all=infos.append("svg").attr("height","25");
   }
 
   var input = document.getElementById("targetNode");
+  input.addEventListener("keyup", function(event) {
+    event.preventDefault();
+    if (event.keyCode === 13) {
+        document.getElementById("buttonSearch").click();
+    }
+  });
   var awesomplete = new Awesomplete(input);
   var nodesList = [];
 
