@@ -3,6 +3,8 @@
   <meta charset="utf-8">
   <script src="/d3"></script>
   <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="/tools/awesomplete/awesomplete.css" />
+  <script src="/tools/awesomplete/awesomplete.js" async></script>
   <style>
   text {
     font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
@@ -767,11 +769,19 @@ var all=infos.append("svg").attr("height","25");
     });
   }
 
-  function searchNominees() {
-    var userInput = document.getElementById("targetNode");
+  var input = document.getElementById("targetNode");
+  var awesomplete = new Awesomplete(input);
+  var nodesList = [];
 
-
+  function suggestions() {
+    if (nodesList.length === 0) {
+      d3.selectAll('circle').each(function(d){
+        nodesList.push(d.name);
+      });
+    }
   }
+
+  awesomplete.list = nodesList;
 
   function list_award(data){
     output=[];
