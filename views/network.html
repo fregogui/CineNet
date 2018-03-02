@@ -23,8 +23,8 @@
     stroke-width: 1px;
   }
   .tooltip {
-    width: 300px;
-    height: 300px;
+    width: 400px;
+
     pointer-events: none;
     text-align: left;
     padding: 5px;
@@ -46,6 +46,8 @@
     position: relative;
     margin-left: 400px;
     margin-top: -22px;
+    font : 25px roboto;
+    font-weight: bold;
     font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
   }
   </style>
@@ -53,7 +55,7 @@
 
 <body>
   <div>
-    <input id="targetNode" name="targetNode" type="text" value="" placeholder="Enter an artist name" onkeyup="searchNominees()"/>
+    <input id="targetNode" name="targetNode" type="text" placeholder="Enter an artist name" onkeyup="suggestions()"/>
     <button onclick="search()">Search</button>
     <h1>Academy Awards Nominees Network</h1>
   </div>
