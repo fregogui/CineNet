@@ -77,6 +77,7 @@
   var infos=main_div.append("div").attr("class","infos").style("width","30%").style("height","1000px");
   var label_activation=infos.append("svg").attr("height","35");
   var all=infos.append("svg").attr("height","25");
+  var winners = infos.append("svg").attr("height", "15");
 
   // create an svg to draw in
   var svg = main_div.append("div").attr("class","chart").style("width","68%").style("height","1000px")
@@ -541,8 +542,6 @@
     /* init an array in which we want to store nodes we will delete*/
     var data_to_remove ={"nodes":[],"links":[]};
 
-
-
     all.append("rect")
     .attr("x", 1)
     .attr("y",1)
@@ -577,6 +576,52 @@
       restart(data_to_remove);
     });
 
+    winners.append("text")
+    .attr("x", 25)
+    .attr("y",10)
+    .attr("dy", ".35em")
+    .style("font-size","12")
+    .style("text-anchor", "left")
+    .text("Oscars 2018 Winners")
+
+    winners.append("rect")
+    .attr("x", 1)
+    .attr("y",1)
+    .attr("width", 18)
+    .attr("height", 18)
+    .attr("fill", 'black')
+    .attr("stroke",'black')
+    .attr("stroke-width",2)
+    .style("fill-opacity",1)
+    .on("click", function(d){
+      if (d3.select(this).style("fill-opacity")==1) {
+        d3.select(this).style("fill-opacity",0.1)
+      }
+      else {
+        d3.select(this).style("fill-opacity",1)
+      }
+      for (var i=0;i<network.nodes.length;i++){
+        var searchNomination = network.nodes[i].nomination.filter( nomination => { return nomination.won; });
+        if (searchNomination.length === 0){
+          if (data_to_remove.nodes.includes(network.nodes[i].id)){
+            data_to_remove.nodes.splice(data_to_remove.nodes.indexOf(network.nodes[i].id),1);
+          }
+          else {
+            data_to_remove.nodes.push(network.nodes[i].id)
+          }
+        }
+      }
+      data_to_remove.links=[];
+      for (var k=0;k<data_to_remove.nodes.length;k++){
+        for (var j=0;j<network.links.length;j++){
+          if(network.links[j].source.id===data_to_remove.nodes[k] || network.links[j].target.id===data_to_remove.nodes[k]){
+            data_to_remove.links.push(network.links[j].id);
+          }
+        }
+      }
+      restart(data_to_remove);
+    });
+
     all.append("text")
     .attr("x", 25)
     .attr("y",10)
@@ -584,8 +629,9 @@
     .style("font-size","12")
     .style("text-anchor", "left")
     .text("All")
-    //active label :
 
+
+    //active label :
 
     label_activation.append("rect").attr("class","rect_label")
     .attr("x", 1)
@@ -693,7 +739,7 @@
     //Add legend at the bottom of info
     let tooltip = infos.append("div").attr("class", "tooltip").style("opacity", 0);
 
-    multicolor(network)
+    multicolor(network);
     function multicolor(data){
       for (var i=0;i<data.nodes.length;i++){
         if (data.nodes[i].nomination.length==2){
@@ -726,7 +772,7 @@
 
       actor.nomination=data[i].nomination;
       network.nodes.push(actor);
-      credtis_i=[];
+      credits_i=[];
       credits_i=data[i].credits.crew.concat(data[i].credits.cast);
       movies_i=[];
       for (var j=i+1;j<n;j++){
@@ -734,10 +780,10 @@
         credits_j= data[j].credits.crew.concat(data[j].credits.cast);
         for (var l=0;l<credits_i.length;l++){
           for (var m=0;m<credits_j.length;m++){
-            if (movies_i.includes(credits_i[l].id)==false && movies_j.includes(credits_j[m].id)==false && credits_i[l].id===credits_j[m].id){
+            if (credits_i[l].id===credits_j[m].id){
               link={};
-              movies_i.push(credits_i[l].id);
-              movies_j.push(credits_j[m].id);
+              movies_i.push(credits_i[l]);
+              movies_j.push(credits_j[m]);
               link.source=data[i].id;
               link.target=data[j].id;
               link.movie=credits_i[l].original_title;
@@ -778,18 +824,17 @@
         document.getElementById("buttonSearch").click();
     }
   });
+
   var awesomplete = new Awesomplete(input);
   var nodesList = [];
 
   function suggestions() {
-    if (nodesList.length === 0) {
-      d3.selectAll('circle').each(function(d){
-        nodesList.push(d.name);
-      });
-    }
+    nodesList = []
+    d3.selectAll('circle').each(function(d){
+      nodesList.push(d.name);
+    });
+    awesomplete.list = nodesList;
   }
-
-  awesomplete.list = nodesList;
 
   function list_award(data){
     output=[];

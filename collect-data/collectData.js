@@ -86,6 +86,7 @@ fs.readFile('./data/nominees.txt', 'latin1', (err, data) => {
 		let nominees = lineInfo[0].split(',');
 		let movie = lineInfo[1];
 		let award = lineInfo[2].replace('\r','');
+		let won = typeof lineInfo[3] === 'undefined' ? false : true;
 
 		async.eachSeries(nominees, (nominee, asyncIterator) => {
 
@@ -116,7 +117,8 @@ fs.readFile('./data/nominees.txt', 'latin1', (err, data) => {
 						if (searchNominee !== -1) {
 							people[searchNominee].nomination.push({
 								movie: movie,
-								award: award
+								award: award,
+								won: won
 							});
 							asyncIterator();
 						}
@@ -147,7 +149,8 @@ fs.readFile('./data/nominees.txt', 'latin1', (err, data) => {
 
 									let nomination = {
 										movie: movie,
-										award: award
+										award: award,
+										won: won
 									};
 									let tmp_array = [];
 									tmp_array.push(nomination);
