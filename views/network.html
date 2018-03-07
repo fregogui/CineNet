@@ -601,7 +601,7 @@
         d3.select(this).style("fill-opacity",1)
       }
       for (var i=0;i<network.nodes.length;i++){
-        var searchNomination = network.nodes[i].nomination.filter( nomination => { return nomination.won; });
+        var searchNomination = network.nodes[i].nomination.filter( nomination => { return !nomination.won; });
         if (searchNomination.length !== 0){
           if (data_to_remove.nodes.includes(network.nodes[i].id)){
             data_to_remove.nodes.splice(data_to_remove.nodes.indexOf(network.nodes[i].id),1);
