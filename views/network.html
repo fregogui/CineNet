@@ -576,6 +576,52 @@
       restart(data_to_remove);
     });
 
+    winners.append("text")
+    .attr("x", 25)
+    .attr("y",10)
+    .attr("dy", ".35em")
+    .style("font-size","12")
+    .style("text-anchor", "left")
+    .text("Oscars 2018 Winners")
+
+    winners.append("rect")
+    .attr("x", 1)
+    .attr("y",1)
+    .attr("width", 18)
+    .attr("height", 18)
+    .attr("fill", 'black')
+    .attr("stroke",'black')
+    .attr("stroke-width",2)
+    .style("fill-opacity",1)
+    .on("click", function(d){
+      if (d3.select(this).style("fill-opacity")==1) {
+        d3.select(this).style("fill-opacity",0.1)
+      }
+      else {
+        d3.select(this).style("fill-opacity",1)
+      }
+      for (var i=0;i<network.nodes.length;i++){
+        var searchNomination = network.nodes[i].nomination.filter( nomination => { return nomination.won; });
+        if (searchNomination.length !== 0){
+          if (data_to_remove.nodes.includes(network.nodes[i].id)){
+            data_to_remove.nodes.splice(data_to_remove.nodes.indexOf(network.nodes[i].id),1);
+          }
+          else {
+            data_to_remove.nodes.push(network.nodes[i].id)
+          }
+        }
+      }
+      data_to_remove.links=[];
+      for (var k=0;k<data_to_remove.nodes.length;k++){
+        for (var j=0;j<network.links.length;j++){
+          if(network.links[j].source.id===data_to_remove.nodes[k] || network.links[j].target.id===data_to_remove.nodes[k]){
+            data_to_remove.links.push(network.links[j].id);
+          }
+        }
+      }
+      restart(data_to_remove);
+    });
+
     all.append("text")
     .attr("x", 25)
     .attr("y",10)
@@ -778,7 +824,7 @@
         document.getElementById("buttonSearch").click();
     }
   });
-  
+
   var awesomplete = new Awesomplete(input);
   var nodesList = [];
 
