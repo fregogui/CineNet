@@ -77,6 +77,7 @@
   var infos=main_div.append("div").attr("class","infos").style("width","30%").style("height","1000px");
   var label_activation=infos.append("svg").attr("height","35");
   var all=infos.append("svg").attr("height","25");
+  var winners = infos.append("svg").attr("height", "15");
 
   // create an svg to draw in
   var svg = main_div.append("div").attr("class","chart").style("width","68%").style("height","1000px")
@@ -541,8 +542,6 @@
     /* init an array in which we want to store nodes we will delete*/
     var data_to_remove ={"nodes":[],"links":[]};
 
-
-
     all.append("rect")
     .attr("x", 1)
     .attr("y",1)
@@ -584,8 +583,9 @@
     .style("font-size","12")
     .style("text-anchor", "left")
     .text("All")
-    //active label :
 
+
+    //active label :
 
     label_activation.append("rect").attr("class","rect_label")
     .attr("x", 1)
@@ -693,7 +693,7 @@
     //Add legend at the bottom of info
     let tooltip = infos.append("div").attr("class", "tooltip").style("opacity", 0);
 
-    multicolor(network)
+    multicolor(network);
     function multicolor(data){
       for (var i=0;i<data.nodes.length;i++){
         if (data.nodes[i].nomination.length==2){
@@ -778,18 +778,17 @@
         document.getElementById("buttonSearch").click();
     }
   });
+  
   var awesomplete = new Awesomplete(input);
   var nodesList = [];
 
   function suggestions() {
-    if (nodesList.length === 0) {
-      d3.selectAll('circle').each(function(d){
-        nodesList.push(d.name);
-      });
-    }
+    nodesList = []
+    d3.selectAll('circle').each(function(d){
+      nodesList.push(d.name);
+    });
+    awesomplete.list = nodesList;
   }
-
-  awesomplete.list = nodesList;
 
   function list_award(data){
     output=[];
