@@ -774,16 +774,16 @@
       network.nodes.push(actor);
       credits_i=[];
       credits_i=data[i].credits.crew.concat(data[i].credits.cast);
-      movies_i=[];
       for (var j=i+1;j<n;j++){
-        movies_j=[];
+        movies_i=[];
         credits_j= data[j].credits.crew.concat(data[j].credits.cast);
         for (var l=0;l<credits_i.length;l++){
+          movies_j=[];
           for (var m=0;m<credits_j.length;m++){
-            if (credits_i[l].id===credits_j[m].id){
+            if (!movies_i.includes(credits_i[l].id) && !movies_j.includes(credits_j[m].id) && credits_i[l].id===credits_j[m].id){
               link={};
-              movies_i.push(credits_i[l]);
-              movies_j.push(credits_j[m]);
+              movies_i.push(credits_i[l].id);
+              movies_j.push(credits_j[m].id);
               link.source=data[i].id;
               link.target=data[j].id;
               link.movie=credits_i[l].original_title;
