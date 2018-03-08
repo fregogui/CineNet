@@ -61,60 +61,75 @@
     <h1>Academy Awards Nominees Network</h1>
   </div>
   <script>
-  var width =1000,
-  height = 800,
-  radius=35;
+  var width =1000;
+  var height = 800;
+  var radius=35;
   var margin = 50;
-  var r=12;
-  var transition=500;
-  var label="on"
+  var r=12; //r for node
+  var transition=500;//delay of transistion
+  var label="on";//init label at on
+  var clicked_node=0;//init node not clicked
+  var data_to_remove ={"nodes":[],"links":[]};//the graph start with all the data
   var color=d3.scaleOrdinal(d3.schemeCategory20)
+
+  //init the DOM
   var main_div=d3.select("body").append("div");
+  //right part containing infos and filter
   var infos=main_div.append("div").attr("class","infos").style("width","30%").style("height","1000px");
-  var label_activation=infos.append("svg").attr("height","35");
-  var all=infos.append("svg").attr("height","25");
-  var winners = infos.append("svg").attr("height", "15");
-  // create an svg to draw in
+    var label_activation=infos.append("svg").attr("height","35");
+    var all=infos.append("svg").attr("height","25");
+    var winners = infos.append("svg").attr("height", "25");
+
+  //left part containing the network chart
   var svg = main_div.append("div").attr("class","chart").style("width","68%").style("height","1000px")
   .append("svg")
   .attr("viewBox", function(){return String(-width/2)+" "+String(-height/2)+" "+String(width)+" "+String(height)});
-  var gradColor=svg.append("defs");
-  //repartition démelage
-  var simulation = d3.forceSimulation()
-  .force("link", d3.forceLink().id(function(d) {return d.id; }).strength(0.025).distance(function(d,i){if (i>6){return (300-i)*4;} else{return i*10+300;}}))//.strength(1))
-  .force("charge", d3.forceCollide().radius(35))
-  //     .force("r", d3.forceRadial(function(d)  {return (19-color.domain().indexOf(d.nomination.award))*50;}))
-  .force("center", d3.forceCenter(0,0))
+  var gradColor=svg.append("defs"); //linear gradiant for multicolor nodes
+
+  //start with data collected in database.json
   d3.json("/database.json", function(json) {
+
     var network=format_to_network(json);
     var awards=list_award(json);
-    // set the nodes
-    var nodes = network.nodes;
-    // links between nodes
-    var links = network.links;
-    for (var i=0; i<links.length; i++) {
-      if (i != 0 && links[i].source == links[i-1].source && links[i].target == links[i-1].target) {
-        links[i].linknum = links[i-1].linknum + 1;
-      }
-      else {links[i].linknum = 1;};
-    };
-    // add the nodes to the simulation and
-    // tell it what to do on each tick
+
+    //define the force model use to dispatch the nodes
+    var simulation = d3.forceSimulation()
+    .force("link", d3.forceLink().id(function(d) {return d.id; }).strength(0.025).distance(function(d,i){if (i>6){return (300-i)*4;} else{return i*10+300;}}))//.strength(1))
+    .force("charge", d3.forceCollide().radius(35))
+    .force("center", d3.forceCenter(0,0));
+
     simulation
-    .nodes(nodes)
+    .nodes(network.nodes)
     .on("tick", ticked);
-    // add the links to the simulation
-    simulation.force("link")
-    .links(links);
+    simulation
+    .force("link")
+    .links(network.links);
+
     // on each tick, update node and link positions
     function ticked() {
       link.attr("d", positionLink);
       node.attr("cx", function (d) { return d.x=Math.max(-width/2+margin, Math.min(width/2 - margin, d.x)); })
       .attr("cy", function(d) { return d.y= Math.max(-height/2+margin, Math.min(height/2 - margin, d.y)); });
     }
-    // add the curved links to our graphic
+
+    function dragstarted(d) {
+      if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+    }
+    function dragged(d) {
+      d.fx = d3.event.x;
+      d.fy = d3.event.y;
+    }
+    function dragended(d) {
+      if (!d3.event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+    }
+
+    // add the curved links to the chart
     var link = svg.append("g").attr("class","links").selectAll(".link")
-    .data(links, function(d){
+    .data(network.links, function(d){
       return d.id;
     })
     .enter()
@@ -125,48 +140,10 @@
     })
     .style("stroke","white").style("stroke-width","1")
     .style("pointer-events", "none");
-    /*
-    var linktext = svg.append("g").selectAll(".linkname")
-    .data(links, function(d){return d.id;});
-    linktext.enter().append("g")
-    .append("text")
-    .attr("class", "linklabel")
-    .style("font-size", "13px")
-    .attr("x", "50")
-    .attr("y", "-20")
-    .attr("text-anchor", "start")
-    .style("fill","#000")
-    .append("textPath")
-    .attr("xlink:href",function(d,i) { return "#" + d.id;})
-    .text(function(d){return d.movie;});*/
-    // add the nodes to the graphic
-    var node = svg.append("g").attr("class","nodes").selectAll(".node")
-    .data(nodes, function(d){
-      return d.id;
-    })
-    .enter().append("circle")
-    .attr("class", "node")
-    .attr("r", r)
-    .attr("id", function(d) { return "_" + d.id; })
-    .attr("fill", function(d) {
-      if (d.nomination.length>1) {
-        return "url(#grad"+String(d.id)
-      }
-      else {
-        return color(d.nomination[0].award);
-      }
-    })
-    .attr('stroke', "black")
-    .on("mouseover", mouse_on)
-    .on("mouseout", mouse_out)
-    .on("click", click_on_node)
-    .call(d3.drag()
-    .on("start", dragstarted)
-    .on("drag", dragged)
-    .on("end", dragended));
-    // links are drawn as curved paths between nodes
+
+    // links are drawn as curved paths between nodes. The curves depend on the number of links between two nodes
     function positionLink(d) {
-      var offset = Math.pow(-1, d.linknum)*100*(d.linknum/3);
+      var offset = Math.pow(-1, d.linknum)*100*(d.linknum/5);
       var midpoint_x = (d.source.x + d.target.x) / 2;
       var midpoint_y = (d.source.y + d.target.y) / 2;
       var dx = (d.target.x - d.source.x);
@@ -182,65 +159,36 @@
       "S" + offSetX + "," + offSetY +
       " " + target_x + "," + target_y;
     }
-    function restart(data_to_remove) {
-      //update nodes (remove or add)
-      node = node.data(network.nodes.filter(function(l){return !data_to_remove.nodes.includes(l.id)}), function(d) { return d.id;});
-      node.exit().remove();
-      var newNode = node.enter().append("circle")
-      .attr("class", "node")
-      .attr("r", r)
-      .attr("id", function(d) { return "_" + d.id; })
-      .attr("fill", function(d) {
-        if (d.nomination.length>1) {
-          return "url(#grad"+String(d.id)
-        }
-        else {
-          return color(d.nomination[0].award);
-        }
-      })
-      .attr('stroke', "black")
-      .on("mouseover", mouse_on)
-      .on("mouseout",mouse_out)
-      .on("click",click_on_node)
-      .call(d3.drag()
-      .on("start", dragstarted)
-      .on("drag", dragged)
-      .on("end", dragended))
-      node = node.merge(newNode);
-      //update links (remove or add)
-      link = link.data(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}), function(d) { return d.id;});
-      link.exit().remove();
-      newLink = link.enter()
-      .append("path")
-      .attr("class", "link")
-      .attr("id",function(d) {
-        return d.id;
-      })
-      .style("pointer-events", "none");
-      ;
-      link = link.merge(newLink);
-      //restart forces
-      simulation.force("link").links(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}));
-      simulation.force("charge", d3.forceCollide().radius(45));
-      simulation.force("center", d3.forceCenter(0,0));
-      //simulation.on("tick",ticked);
-      simulation.alpha(0.5).alphaTarget(0).restart();
-    }
-    function dragstarted(d) {
-      if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-      d.fx = d.x;
-      d.fy = d.y;
-    }
-    function dragged(d) {
-      d.fx = d3.event.x;
-      d.fy = d3.event.y;
-    }
-    function dragended(d) {
-      if (!d3.event.active) simulation.alphaTarget(0);
-      d.fx = null;
-      d.fy = null;
-    }
-    function mouse_on(d){
+
+    // add the nodes to the chart
+    var node = svg.append("g").attr("class","nodes").selectAll(".node")
+    .data(network.nodes, function(d){
+      return d.id;
+    })
+    .enter().append("circle")
+    .attr("class", "node")
+    .attr("r", r)
+    .attr("id", function(d) { return "_" + d.id; })
+    .attr("fill", function(d) {
+      if (d.nomination.length>1) {
+        return "url(#grad"+String(d.id)
+      }
+      else {
+        return color(d.nomination[0].award);
+      }
+    })
+    .attr('stroke', "black")
+    .on("mouseover", mouse_on_node)
+    .on("mouseout", mouse_out_node)
+    .on("click", click_on_node)
+    .call(d3.drag()
+    .on("start", dragstarted)
+    .on("drag", dragged)
+    .on("end", dragended));
+
+
+    //Define the interraction with nodes and legend
+    function mouse_on_node(d){
       node_display=[];
       link_display=[];
       simulation.stop();
@@ -282,7 +230,7 @@
       touchID=d.id;
       textDisplay=svg.append("g").attr("class", "nodetext");
       var linktext = svg.append("g").attr('class',"linktext").selectAll(".linkname")
-      .data(links.filter(function(d){return d.source.id === touchID || d.target.id === touchID}), function(d){return d.id;});
+      .data(network.links.filter(function(d){return d.source.id === touchID || d.target.id === touchID}), function(d){return d.id;});
       svg.selectAll(".link")
       .filter(function(d) {
         if(d.source.id === touchID || d.target.id === touchID) {
@@ -350,7 +298,7 @@
       .style("opacity", 1)
       .style("pointer-events", "none");
     }
-    function mouse_out() {
+    function mouse_out_node() {
       tooltip.transition()
       .duration(transition)
       .style("opacity", 0);
@@ -359,42 +307,6 @@
       svg.selectAll(".nodetext").remove();
       svg.selectAll(".linktext").remove();
       simulation.restart();
-    }
-    var clicked_node=0
-    function click_on_node(d) {
-      if (clicked_node===0){
-        data_to_remove=={"nodes":[],"links":[]};
-        d3.selectAll('circle').each(function(c) {
-          if (d !== c) {
-            data_to_remove.nodes.push(c.id);
-          }
-        });
-        d3.selectAll('.link').each(function(l) {
-          if (l.source.id === d.id) {
-            data_to_remove.nodes = data_to_remove.nodes.filter( el => {
-              return el !== l.target.id;
-            });
-          }
-          if (l.target.id === d.id) {
-            data_to_remove.nodes = data_to_remove.nodes.filter( el => {
-              return el !== l.source.id;
-            });
-          }
-        });
-        data_to_remove.links=[];
-        for (var j=0;j<network.links.length;j++){
-          if(network.links[j].source.id!=d.id && network.links[j].target.id!=d.id){
-            data_to_remove.links.push(network.links[j].id);
-          }
-        }
-        clicked_node=1;
-        restart(data_to_remove);
-      }
-      else if (clicked_node===1){
-        data_to_remove={"nodes":[],"links":[]};
-        clicked_node=0;
-        restart(data_to_remove);
-      }
     }
     function mouse_on_legend(d) {
       node_display=[];
@@ -488,19 +400,44 @@
       svg.selectAll(".text_link").remove();
       simulation.restart();
     }
-    /* init an array in which we want to store nodes we will delete*/
-    var data_to_remove ={"nodes":[],"links":[]};
-    all.append("rect")
-    .attr("x", 1)
-    .attr("y",1)
-    .attr("width", 18)
-    .attr("height", 18)
-    .attr("fill", 'black')
-    .attr("stroke",'black')
-    .attr("stroke-width",2)
-    .style("fill-opacity",1)
-    .on("click", function(d){
+    function click_on_node(d) {
+      if (clicked_node===0){
+        data_to_remove=={"nodes":[],"links":[]};
+        d3.selectAll('circle').each(function(c) {
+          if (d !== c) {
+            data_to_remove.nodes.push(c.id);
+          }
+        });
+        d3.selectAll('.link').each(function(l) {
+          if (l.source.id === d.id) {
+            data_to_remove.nodes = data_to_remove.nodes.filter( el => {
+              return el !== l.target.id;
+            });
+          }
+          if (l.target.id === d.id) {
+            data_to_remove.nodes = data_to_remove.nodes.filter( el => {
+              return el !== l.source.id;
+            });
+          }
+        });
+        data_to_remove.links=[];
+        for (var j=0;j<network.links.length;j++){
+          if(network.links[j].source.id!=d.id && network.links[j].target.id!=d.id){
+            data_to_remove.links.push(network.links[j].id);
+          }
+        }
+        clicked_node=1;
+        restart(data_to_remove);
+      }
+      else if (clicked_node===1){
+        data_to_remove={"nodes":[],"links":[]};
+        clicked_node=0;
+        restart(data_to_remove);
+      }
+    }
+    function click_on_all(){
       if (d3.select(this).style("fill-opacity")==1) {
+
         d3.selectAll(".rectlegend").style("fill-opacity",0.1);
         d3.select(this).style("fill-opacity",0.1);
         for (var i=0;i<network.nodes.length;i++){
@@ -521,15 +458,50 @@
         d3.select(this).style("fill-opacity",1);
       }
       restart(data_to_remove);
-    });
-    winners.append("text")
+    }
+    function click_on_winner(d){
+      if (d3.select(this).style("fill-opacity")==0.1) {
+        d3.selectAll(".rectlegend").style("fill-opacity",0.1);
+        d3.selectAll(".rect_all").style("fill-opacity",0.1);
+        d3.select(this).style("fill-opacity",1);
+
+        data_to_remove ={"nodes":[],"links":[]};
+        for (var i=0;i<network.nodes.length;i++){
+          var searchNomination = network.nodes[i].nomination.filter( nomination => { return nomination.won; });
+          if (searchNomination.length === 0){
+            data_to_remove.nodes.push(network.nodes[i].id)
+            }
+      }
+      for (var k=0;k<data_to_remove.nodes.length;k++){
+        for (var j=0;j<network.links.length;j++){
+          if(network.links[j].source.id===data_to_remove.nodes[k] || network.links[j].target.id===data_to_remove.nodes[k]){
+            data_to_remove.links.push(network.links[j].id);
+          }
+        }
+      }
+    }
+
+
+
+      else {
+        d3.select(this).style("fill-opacity",0.1);
+        d3.selectAll(".rectlegend").style("fill-opacity",1);
+        d3.selectAll(".rect_all").style("fill-opacity",1);
+        data_to_remove ={"nodes":[],"links":[]};
+      }
+      restart(data_to_remove);
+    }
+
+    //Define the checkbox selectAll
+    all.append("text")
     .attr("x", 25)
     .attr("y",10)
     .attr("dy", ".35em")
     .style("font-size","12")
     .style("text-anchor", "left")
-    .text("Oscars 2018 Winners")
-    winners.append("rect")
+    .text("All");
+
+    all.append("rect").attr("class","rect_all")
     .attr("x", 1)
     .attr("y",1)
     .attr("width", 18)
@@ -538,41 +510,29 @@
     .attr("stroke",'black')
     .attr("stroke-width",2)
     .style("fill-opacity",1)
-    .on("click", function(d){
-      if (d3.select(this).style("fill-opacity")==1) {
-        d3.select(this).style("fill-opacity",0.1)
-      }
-      else {
-        d3.select(this).style("fill-opacity",1)
-      }
-      for (var i=0;i<network.nodes.length;i++){
-        var searchNomination = network.nodes[i].nomination.filter( nomination => { return nomination.won; });
-        if (searchNomination.length === 0){
-          if (data_to_remove.nodes.includes(network.nodes[i].id)){
-            data_to_remove.nodes.splice(data_to_remove.nodes.indexOf(network.nodes[i].id),1);
-          }
-          else {
-            data_to_remove.nodes.push(network.nodes[i].id)
-          }
-        }
-      }
-      data_to_remove.links=[];
-      for (var k=0;k<data_to_remove.nodes.length;k++){
-        for (var j=0;j<network.links.length;j++){
-          if(network.links[j].source.id===data_to_remove.nodes[k] || network.links[j].target.id===data_to_remove.nodes[k]){
-            data_to_remove.links.push(network.links[j].id);
-          }
-        }
-      }
-      restart(data_to_remove);
-    });
-    all.append("text")
+    .on("click", click_on_all);
+
+    //Define the checkbox to select the Oscars 2018 Winners
+    winners.append("text")
     .attr("x", 25)
     .attr("y",10)
     .attr("dy", ".35em")
     .style("font-size","12")
     .style("text-anchor", "left")
-    .text("All")
+    .text("Only Oscars 2018 Winners")
+    winners.append("rect").attr("class","rect_winners")
+    .attr("x", 1)
+    .attr("y",1)
+    .attr("width", 18)
+    .attr("height", 18)
+    .attr("fill", 'black')
+    .attr("stroke",'black')
+    .attr("stroke-width",2)
+    .style("fill-opacity",0.1)
+    .on("click", click_on_winner);
+
+
+
     //active label :
     label_activation.append("rect").attr("class","rect_label")
     .attr("x", 1)
@@ -691,7 +651,52 @@
         }
       }
     }
-  });
+
+    //Giving nodes and links to remove, calculate and actualise the new network chart
+    function restart(data_to_remove) {
+      //update nodes (remove or add)
+      node = node.data(network.nodes.filter(function(l){return !data_to_remove.nodes.includes(l.id)}), function(d) { return d.id;});
+      node.exit().remove();
+      var newNode = node.enter().append("circle")
+      .attr("class", "node")
+      .attr("r", r)
+      .attr("id", function(d) { return "_" + d.id; })
+      .attr("fill", function(d) {
+        if (d.nomination.length>1) {
+          return "url(#grad"+String(d.id)
+        }
+        else {
+          return color(d.nomination[0].award);
+        }
+      })
+      .attr('stroke', "black")
+      .on("mouseover", mouse_on_node)
+      .on("mouseout",mouse_out_node)
+      .on("click",click_on_node)
+      .call(d3.drag()
+      .on("start", dragstarted)
+      .on("drag", dragged)
+      .on("end", dragended))
+      node = node.merge(newNode);
+      link = link.data(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}), function(d) { return d.id;});
+      link.exit().remove();
+      newLink = link.enter()
+      .append("path")
+      .attr("class", "link")
+      .attr("id",function(d) {
+        return d.id;
+      })
+      .style("pointer-events", "none");
+      ;
+      link = link.merge(newLink);
+      //restart forces
+      simulation.force("link").links(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}));
+      simulation.force("charge", d3.forceCollide().radius(45));
+      simulation.force("center", d3.forceCenter(0,0));
+      //simulation.on("tick",ticked);
+      simulation.alpha(0.5).alphaTarget(0).restart();
+    }
+  }); //end of json
   function format_to_network(data){
     n=data.length;
     network={"nodes":[],"links":[]}
@@ -724,6 +729,12 @@
         }
       }
     }
+    for (var i=0; i<network.links.length; i++) {
+      if (i != 0 && network.links[i].source == network.links[i-1].source && network.links[i].target == network.links[i-1].target) {
+        network.links[i].linknum = network.links[i-1].linknum + 1;
+      }
+      else {network.links[i].linknum = 1;};
+    };
     return network;
   }
   function search() {
