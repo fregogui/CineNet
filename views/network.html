@@ -20,10 +20,6 @@
       stroke: #ddd;
       stroke-width: 1px;
     }
-    .node {
-      stroke: #000;
-      stroke-width: 1px;
-    }
     .tooltip {
       width: 400px;
       pointer-events: none;
@@ -89,12 +85,16 @@
     //start with data collected in database.json
     d3.json("/database.json", function(json) {
 
+      //format the dataset to a networkchart friendly format
       var network=format_to_network(json);
+      //list all the awards
       var awards=list_award(json);
+      //define the colors of multicategory artist
+      multicolor(network);
 
       //define the force model use to dispatch the nodes
       var simulation = d3.forceSimulation()
-      .force("link", d3.forceLink().id(function(d) {return d.id; }).strength(0.025).distance(function(d,i){if (i>6){return (300-i)*4;} else{return i*10+300;}}))//.strength(1))
+      .force("link", d3.forceLink().id(function(d) {return d.id; }).strength(0.025).distance(function(d,i){if (i>6){return (300-i)*5;} else{return i*15+300;}}))//.strength(1))
       .force("charge", d3.forceCollide().radius(35))
       .force("center", d3.forceCenter(0,0));
 
@@ -160,7 +160,7 @@
         " " + target_x + "," + target_y;
       }
 
-      // add the nodes to the chart
+      // add nodes to the chart
       var node = svg.append("g").attr("class","nodes").selectAll(".node")
       .data(network.nodes, function(d){
         return d.id;
@@ -177,7 +177,22 @@
           return color(d.nomination[0].award);
         }
       })
-      .attr('stroke', "black")
+      .attr('stroke', function(d){
+        var searchNomination=d.nomination.filter( nomination => { return nomination.won; });
+        if (searchNomination.length === 0){
+          return "black"}
+        else {
+          return "#FFBF00"
+        }
+      })
+      .attr("stroke-width",function(d){
+        var searchNomination=d.nomination.filter( nomination => { return nomination.won; });
+        if (searchNomination.length === 0){
+          return 1}
+        else {
+          return 3
+        }
+      })
       .on("mouseover", mouse_on_node)
       .on("mouseout", mouse_out_node)
       .on("click", click_on_node)
@@ -187,7 +202,99 @@
       .on("end", dragended));
 
 
-      //Define the interraction with nodes and legend
+      //Define the checkbox selectAll
+      all.append("text")
+      .attr("x", 25)
+      .attr("y",10)
+      .attr("dy", ".35em")
+      .style("font-size","12")
+      .style("text-anchor", "left")
+      .text("All");
+
+      all.append("rect").attr("class","rect_all")
+      .attr("x", 1)
+      .attr("y",1)
+      .attr("width", 18)
+      .attr("height", 18)
+      .attr("fill", 'black')
+      .attr("stroke",'black')
+      .attr("stroke-width",2)
+      .style("fill-opacity",1)
+      .on("click", click_on_all);
+
+      //Define the checkbox to select the Oscars 2018 Winners
+      winners.append("text")
+      .attr("x", 25)
+      .attr("y",10)
+      .attr("dy", ".35em")
+      .style("font-size","12")
+      .style("text-anchor", "left")
+      .text("Only Oscars 2018 Winners")
+      winners.append("rect").attr("class","rect_winners")
+      .attr("x", 1)
+      .attr("y",1)
+      .attr("width", 18)
+      .attr("height", 18)
+      .attr("fill", 'black')
+      .attr("stroke",'black')
+      .attr("stroke-width",2)
+      .style("fill-opacity",0.1)
+      .on("click", click_on_winner);
+
+      //Define the checkbox to active or not the label on links
+      label_activation.append("text")
+      .attr("x", 25)
+      .attr("y",10)
+      .attr("dy", ".35em")
+      .attr("font-size","12")
+      .style("text-anchor", "left")
+      .text("Label on links");
+
+      label_activation.append("rect").attr("class","rect_label")
+      .attr("x", 1)
+      .attr("y",1)
+      .attr("width", 18)
+      .attr("height", 18)
+      .attr("fill", 'black')
+      .attr("stroke",'black')
+      .attr("stroke-width",2)
+      .style("fill-opacity",1)
+      .on("click", click_on_label);
+
+      // Define the checkbox to active or not categories of Oscars
+      var legend = infos.append("svg").attr("height","425").selectAll(".legend")
+      .data(awards).enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", (d, i) => { return "translate(0," + i * 22 + ")"; });
+      // draw legend colored rectangles
+      legend.append("rect")
+      .attr("class","rectlegend")
+      .attr("x", 1)
+      .attr("y",0)
+      .attr("width", 18)
+      .attr("height", 18)
+      .attr("fill", color)
+      .attr("stroke",color)
+      .attr("stroke-width",2)
+      .style("fill-opacity",1)
+      .on("click",click_on_category)
+      .on("mouseover", mouse_on_legend)
+      .on("mouseout", mouse_out_legend);
+      // draw legend text
+      legend.append("text")
+      .style("font-size","12")
+      .attr("x", 25)
+      .attr("y",10)
+      .attr("dy", ".35em")
+      .style("text-anchor", "left")
+      .text(d => { return d;})
+
+      //Add legend at the bottom of info
+      let tooltip = infos.append("div").attr("class", "tooltip").style("opacity", 0);
+
+      //From here to the end of the json are defined function which need dom or network global variable
+
+      //When mouse over a node : highlight only its first neighbour, their name and the movie which links them
       function mouse_on_node(d){
         node_display=[];
         link_display=[];
@@ -298,6 +405,7 @@
         .style("opacity", 1)
         .style("pointer-events", "none");
       }
+      //When mouse out a node : stop highlighting its first neighbour
       function mouse_out_node() {
         tooltip.transition()
         .duration(transition)
@@ -308,6 +416,7 @@
         svg.selectAll(".linktext").remove();
         simulation.restart();
       }
+      //When mouse over a legend rectangle : display the nominees of the catarogy and their first neighbours
       function mouse_on_legend(d) {
         node_display=[];
         if(d3.select(this).style("fill-opacity")==1){
@@ -392,6 +501,7 @@
           .style("opacity", 1);
         }
       }
+      //When mouse out a legend rectangle : stop displaying the nominees of this category and their first neighbours
       function mouse_out_legend() {
         d3.selectAll("circle").transition()
         .duration(transition).style("opacity",1).attr("r",r);
@@ -400,6 +510,7 @@
         svg.selectAll(".text_link").remove();
         simulation.restart();
       }
+      //When click on a node : remove of the simulation all the nodes not related to the clicked node
       function click_on_node(d) {
         if (clicked_node===0){
           data_to_remove=={"nodes":[],"links":[]};
@@ -435,6 +546,7 @@
           restart(data_to_remove);
         }
       }
+      //When click on the All rectangle : if rectangle fill black then remove all the nodes of the simulation, else add all of them
       function click_on_all(){
         data_to_remove ={"nodes":[],"links":[]};
         if (d3.select(this).style("fill-opacity")==1) {
@@ -459,6 +571,7 @@
         }
         restart(data_to_remove);
       }
+      //When click on the Winner rectangle : display only the 2018 winners (remove all the other node)
       function click_on_winner(d){
         if (d3.select(this).style("fill-opacity")==0.1) {
             d3.selectAll(".rectlegend").style("fill-opacity",0.1);
@@ -488,6 +601,7 @@
           }
           restart(data_to_remove);
         }
+      //When click on the label rectangle : active or unactive the label under the link (mouse_on_node)
       function click_on_label(){
         if (d3.select(this).style("fill-opacity")==1) {
           d3.select(this).style("fill-opacity",0);
@@ -498,6 +612,7 @@
           d3.select(this).style("fill-opacity",1);
         }
       }
+      //When click on category : remove or add the nominee of this category
       function click_on_category(d){
        if (d3.select(this).style("fill-opacity")==1) {
          d3.select(this).style("fill-opacity",0.1)
@@ -512,12 +627,12 @@
          if(d3.select(this).style("fill-opacity")==1){
            is_all_black+=1;
          }})
-      if (is_all_black==19){
-        d3.selectAll(".rect_all").style("fill-opacity",1)
-      }
-      else {
-        d3.selectAll(".rect_all").style("fill-opacity",0.1)
-      }
+        if (is_all_black==19){
+          d3.selectAll(".rect_all").style("fill-opacity",1)
+        }
+        else {
+          d3.selectAll(".rect_all").style("fill-opacity",0.1)
+        }
 
 
        for (var i=0;i<network.nodes.length;i++){
@@ -541,94 +656,7 @@
        }
        restart(data_to_remove);
         }
-      //Define the checkbox selectAll
-      all.append("text")
-      .attr("x", 25)
-      .attr("y",10)
-      .attr("dy", ".35em")
-      .style("font-size","12")
-      .style("text-anchor", "left")
-      .text("All");
-
-      all.append("rect").attr("class","rect_all")
-      .attr("x", 1)
-      .attr("y",1)
-      .attr("width", 18)
-      .attr("height", 18)
-      .attr("fill", 'black')
-      .attr("stroke",'black')
-      .attr("stroke-width",2)
-      .style("fill-opacity",1)
-      .on("click", click_on_all);
-
-      //Define the checkbox to select the Oscars 2018 Winners
-      winners.append("text")
-      .attr("x", 25)
-      .attr("y",10)
-      .attr("dy", ".35em")
-      .style("font-size","12")
-      .style("text-anchor", "left")
-      .text("Only Oscars 2018 Winners")
-      winners.append("rect").attr("class","rect_winners")
-      .attr("x", 1)
-      .attr("y",1)
-      .attr("width", 18)
-      .attr("height", 18)
-      .attr("fill", 'black')
-      .attr("stroke",'black')
-      .attr("stroke-width",2)
-      .style("fill-opacity",0.1)
-      .on("click", click_on_winner);
-
-      //Define the checkbox to active or not the label on links
-      label_activation.append("text")
-      .attr("x", 25)
-      .attr("y",10)
-      .attr("dy", ".35em")
-      .attr("font-size","12")
-      .style("text-anchor", "left")
-      .text("Label on links");
-
-      label_activation.append("rect").attr("class","rect_label")
-      .attr("x", 1)
-      .attr("y",1)
-      .attr("width", 18)
-      .attr("height", 18)
-      .attr("fill", 'black')
-      .attr("stroke",'black')
-      .attr("stroke-width",2)
-      .style("fill-opacity",1)
-      .on("click", click_on_label);
-
-      // Define the checkbox to active or not categories of Oscars
-      var legend = infos.append("svg").attr("height","425").selectAll(".legend")
-      .data(awards).enter().append("g")
-      .attr("class", "legend")
-      .attr("transform", (d, i) => { return "translate(0," + i * 22 + ")"; });
-      // draw legend colored rectangles
-
-      //HERE
-      legend.append("rect")
-      .attr("class","rectlegend")
-      .attr("x", 1)
-      .attr("y",0)
-      .attr("width", 18)
-      .attr("height", 18)
-      .attr("fill", color)
-      .attr("stroke",color)
-      .attr("stroke-width",2)
-      .style("fill-opacity",1)
-      .on("click",click_on_category)
-      .on("mouseover", mouse_on_legend)
-      .on("mouseout", mouse_out_legend);
-      // draw legend text
-      legend.append("text")
-      .style("font-size","12")
-      .attr("x", 25)
-      .attr("y",10)
-      .attr("dy", ".35em")
-      .style("text-anchor", "left")
-      .text(d => { return d;})
+      //Fill dynamicly the tooltip with html
       function html_tooltip(node){
         n=node.nomination.length
         if (n<2){
@@ -644,9 +672,7 @@
         }
         return text
       }
-      //Add legend at the bottom of info
-      let tooltip = infos.append("div").attr("class", "tooltip").style("opacity", 0);
-      multicolor(network);
+      //Genrate linear gradiant to color nodes corresponding to multinomination
       function multicolor(data){
         for (var i=0;i<data.nodes.length;i++){
           if (data.nodes[i].nomination.length==2){
@@ -666,7 +692,6 @@
           }
         }
       }
-
       //Giving nodes and links to remove, calculate and actualise the new network chart
       function restart(data_to_remove) {
         //update nodes (remove or add)
@@ -684,7 +709,22 @@
             return color(d.nomination[0].award);
           }
         })
-        .attr('stroke', "black")
+        .attr('stroke', function(d){
+          var searchNomination=d.nomination.filter( nomination => { return nomination.won; });
+          if (searchNomination.length === 0){
+            return "black"}
+          else {
+            return "#FFBF00"
+          }
+        })
+        .attr("stroke-width",function(d){
+          var searchNomination=d.nomination.filter( nomination => { return nomination.won; });
+          if (searchNomination.length === 0){
+            return 1}
+          else {
+            return 3
+          }
+        })
         .on("mouseover", mouse_on_node)
         .on("mouseout",mouse_out_node)
         .on("click",click_on_node)
@@ -712,6 +752,8 @@
         simulation.alpha(0.5).alphaTarget(0).restart();
       }
     }); //end of json
+
+    //Giving raw data in json format, parse them to draw a network chart
     function format_to_network(data){
       n=data.length;
       network={"nodes":[],"links":[]}
@@ -752,6 +794,17 @@
       };
       return network;
     }
+    //Giving formated to network data, give all the award (ie the category of each node)
+    function list_award(data){
+      output=[];
+      for (var i=0;i<data.length;i++){
+        if (!output.includes(data[i].nomination[0].award)){
+          output.push(data[i].nomination[0].award);
+        }
+      }
+      return output;
+    }
+    //Giving a text input, highlight the node corresponding to the nominee of the node
     function search() {
       d3.selectAll("circle")
       .style("opacity", .1);
@@ -784,15 +837,7 @@
       });
       awesomplete.list = nodesList;
     }
-    function list_award(data){
-      output=[];
-      for (var i=0;i<data.length;i++){
-        if (!output.includes(data[i].nomination[0].award)){
-          output.push(data[i].nomination[0].award);
-        }
-      }
-      return output;
-    }
+
     Array.prototype.diff = function(a) {
       return this.filter(function(i) {
         return a.indexOf(i) < 0;
