@@ -93,10 +93,11 @@
       multicolor(network);
 
       //define the force model use to dispatch the nodes
-      var simulation = d3.forceSimulation()
-      .force("link", d3.forceLink().id(function(d) {return d.id; }).strength(0.025).distance(function(d,i){if (i>6){return (300-i)*5;} else{return i*15+300;}}))//.strength(1))
-      .force("charge", d3.forceCollide().radius(35))
-      .force("center", d3.forceCenter(0,0));
+      var simulation = d3.forceSimulation().alphaDecay(0.05)
+      .force("link", d3.forceLink().id(function(d) {return d.id; }).distance(function(d){return d.movie.length+400 }).strength(1))//d3.forceLink().id(function(d) {return d.id; }).strength(1).distance(function(d,i){if (i>6){return (300-i)*5;} else{return i*15+300;}}))//.strength(1))
+      .force("charge", d3.forceCollide().radius(45))
+      .force("center", d3.forceCenter(0,0))
+
 
       simulation
       .nodes(network.nodes)
@@ -113,7 +114,7 @@
       }
 
       function dragstarted(d) {
-        if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+        if (!d3.event.active) simulation.restart().alpha(0.5);
         d.fx = d.x;
         d.fy = d.y;
       }
@@ -745,10 +746,12 @@
         ;
         link = link.merge(newLink);
         //restart forces
-        simulation.force("link").links(network.links.filter(function(l){return !data_to_remove.links.includes(l.id)}));
-        simulation.force("charge", d3.forceCollide().radius(45));
+
+
+        simulation.force("link", d3.forceLink().id(function(d) {return d.id; }).distance(function(d){return d.movie.length+400 }).strength(1))//d3.forceLink().id(function(d) {return d.id; }).strength(1).distance(function(d,i){if (i>6){return (300-i)*5;} else{return i*15+300;}}))//.strength(1))
+        simulation.force("charge", d3.forceCollide().radius(45))
         simulation.force("center", d3.forceCenter(0,0));
-        //simulation.on("tick",ticked);
+
         simulation.alpha(0.5).alphaTarget(0).restart();
       }
     }); //end of json
