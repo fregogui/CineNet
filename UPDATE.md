@@ -1,7 +1,7 @@
 ## Update
 
 ### Update list since since 02/03/2018 :
-* We surrounded the winners' nodes in orange and added a "Only Oscars Winners 2018" to display only these people.
+* We surrounded the winners' nodes in orange and added a "Only Oscars Winners 2018" filter to display only these people.
 
 <table border="0">
   <tr>
