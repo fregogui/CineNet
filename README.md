@@ -1,5 +1,5 @@
 # CineNet Project
-Authors : [Antonio De Jesus Montes](https://github.com/ADJMLyon) | [Nicolas Lefebvre](https://github.com/Nicocolabricot) | [Guillaume Fregosi](https://github.com/fregogui)
+Authors : [Antonio De Jesus Montez](https://github.com/ADJMLyon) | [Nicolas Lefebvre](https://github.com/Nicocolabricot) | [Guillaume Fregosi](https://github.com/fregogui)
 The purpose of this project is to show the relations between the nominees of the Oscare 2018. Using a network graph, we want to highlight the interaction between them.
 
 
@@ -20,7 +20,7 @@ For this visualisation, we chose to represent the nominees with a nide and each 
   </tr>
 </table>
 
-The data was taken from [api.themoviedb.org](https://www.themoviedb.org/).
+The data was taken from [api.themoviedb.org](https://www.themoviedb.org/) and we have coded a node.js script to get the data we want from this API. See the [script](https://github.com/fregogui/CineNet/blob/master/collect-data/collectData.js)
 
 ## Installation
 
@@ -47,9 +47,9 @@ Then,  use theses commands line
 npm install
 npm start
 ```
-You will see the file `data-base.json` in `CineNet/collect-data/data/`.
+You will see the file `database.json` in `CineNet/collect-data/data/`.
 
-*If you want more detail about the data collect and the data parsing, you can read : [PROCESSING.md](https://github.com/fregogui/CineNet/blob/master/PROCESSING.md)*
+*If you want more detail about the data collect and the data parsing, you can read : [DATA.md](https://github.com/fregogui/CineNet/blob/master/DATA.md)* and [PROCESSING.md](https://github.com/fregogui/CineNet/blob/master/PROCESSING.md)*
 
 **Start the local server**
 
