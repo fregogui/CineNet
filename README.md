@@ -31,9 +31,9 @@ Download [node.js](https://nodejs.org/).
 
 ### Collect the data
 
-In CineNet repository, use these commands lines.
+After cloning the repository, use theses command lines :
 ```
-cd collect-data
+cd CineNet/collect-data
 cp config.secrets.sample.json config.secrets.json
 ```
 Then, open the `config.secrets.json` file and put your `api_key` from [The Movie Database](https://www.themoviedb.org/) in the correct field.
@@ -41,7 +41,8 @@ Then,  use theses commands line
 ```
 npm install
 ```
-You will see the file `data-base.json`.
+You will see the file `data-base.json` in `CineNet/collect-data/data/`.
+Finally run and go to [http://localhost:3101/network](http://localhost:3101/network)
 ```
 npm start
 ```
