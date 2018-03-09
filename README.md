@@ -1,6 +1,7 @@
 # CineNet Project
-
+Authors : [Antonio De Jesus Montes](https://github.com/ADJMLyon) | [Nicolas Lefebvre](https://github.com/Nicocolabricot) | [Guillaume Fregosi](https://github.com/fregogui)
 The purpose of this project is to show the relations between the nominees of the Oscare 2018. Using a network graph, we want to highlight the interaction between them.
+
 
 ## General presentation
 
