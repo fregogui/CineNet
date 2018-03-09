@@ -177,7 +177,7 @@ The last updates are listed on [UPDATE.md](https://github.com/fregogui/CineNet/b
 
 ## Interesting results
 
-We can see that some people collaborated on many movies with a single person, usually the realisators or productors. Thats leads us to think that these persons are in a way the favorites of their boss.
+We can see that some people collaborated on many movies with a single person, usually the directors or producers. Thats leads us to think that these persons are in a way the favorites of their boss.
 
 
 ## Next feature
