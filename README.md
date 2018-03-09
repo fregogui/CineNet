@@ -1,6 +1,6 @@
 # CineNet Project
 
-The purpose of this project is to show the relations between the nominees of the Oscare 2018. Using a network graph, we want to highlight the interaction between them :
+The purpose of this project is to show the relations between the nominees of the Oscare 2018. Using a network graph, we want to highlight the interaction between them.
 
 ## General presentation
 
@@ -20,6 +20,32 @@ For this visualisation, we chose to represent the nominees with a nide and each 
 </table>
 
 The data was taken from [api.themoviedb.org](https://www.themoviedb.org/).
+
+## Installation
+
+You can directly visualize the network chart online: [Cine Net](https://fregogui.github.io/CineNet/views/network.html)
+
+If you prefer, you can clone our repository and follow these different steps :
+
+Download [node.js](https://nodejs.org/).
+
+### Collect the data
+
+In CineNet repository, use these commands lines.
+```
+cd collect-data
+cp config.secrets.sample.json config.secrets.json
+```
+Then, open the `config.secrets.json` file and put your `api_key` from [The Movie Database](https://www.themoviedb.org/) in the correct field.
+Then,  use theses commands line 
+```
+npm install
+```
+You will see the file `data-base.json`.
+```
+npm start
+```
+
 
 ## Functionalities
 
@@ -162,19 +188,4 @@ It would possible to rank people following the number of people they collaborate
 
 ### Data collection
 
-Download [node.js](https://nodejs.org/).
 
-Then,
-
-```
-cd collect-data
-cp config.secrets.sample.json config.secrets.json
-```
-
-Open the `config.secrets.json` file and put your `api_key` from [The Movie Database](https://www.themoviedb.org/) in the correct field.
-Then, 
-
-```
-npm install
-npm start
-```
