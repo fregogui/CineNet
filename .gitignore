@@ -11,3 +11,4 @@ node_modules/
 
 # Data
 *.secrets.json
+database.json
