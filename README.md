@@ -198,7 +198,6 @@ Update list since since 02/03/2018 :
 
 ## Interesting results
 
-/!\ Il n'y en a plus depuis la mise à jour ?
 We can see that some people collaborated on many movies with a single person, usually the realisators or productors. Thats leads us to think that these persons are in a way the favorites of their boss.
 
 
