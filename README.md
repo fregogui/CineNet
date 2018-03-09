@@ -173,7 +173,8 @@ Finally, if the user is interested in somebody in particular, he can use the sea
 
 ### Last updates
 
-We surrounded the winners' nodes in orange and added a "Only Oscars Winners 2018" to display only these people.
+Update list since since 02/03/2018 :
+* We surrounded the winners' nodes in orange and added a "Only Oscars Winners 2018" to display only these people.
 
 <table border="0">
   <tr>
@@ -187,10 +188,7 @@ We surrounded the winners' nodes in orange and added a "Only Oscars Winners 2018
     </td>
   </tr>
 </table>
-## Last Update 
 
-Update list since since 02/03/2018 :
-* Add a winner 2018 filter
 * Update the data parser to have all the links (previous version some links between artists were missing)
 * Correct all the filter bug (deselect All, select one category, then another and deselect the first)
 * Give sens to the selection/unselection of the color checkbox (ex : if one category is uncheck, then All is automatically unchecked)
