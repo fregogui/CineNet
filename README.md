@@ -23,13 +23,17 @@ The data was taken from [api.themoviedb.org](https://www.themoviedb.org/).
 
 ## Installation
 
+### Easy to use:
+
 You can directly visualize the network chart online: [Cine Net](https://fregogui.github.io/CineNet/views/network.html)
 
-If you prefer, you can clone our repository and follow these different steps :
+### Use local installation:
+
+You can clone our repository and follow these different steps :
 
 Download [node.js](https://nodejs.org/).
 
-### Collect the data
+**Collect the data**
 
 After cloning the repository, use theses command lines :
 ```
@@ -40,12 +44,19 @@ Then, open the `config.secrets.json` file and put your `api_key` from [The Movie
 Then,  use theses commands line 
 ```
 npm install
+npm start
 ```
 You will see the file `data-base.json` in `CineNet/collect-data/data/`.
-Finally run and go to [http://localhost:3101/network](http://localhost:3101/network)
+
+*If you want more detail about the data collect and the data parsing, you can read : [PROCESSING.md](https://github.com/fregogui/CineNet/blob/master/PROCESSING.md)*
+
+**Start the local server**
+
+In CineNet repository, run :
 ```
 npm start
 ```
+Go to [http://localhost:3101/network](http://localhost:3101/network)
 
 
 ## Functionalities
@@ -175,18 +186,28 @@ We surrounded the winners' nodes in orange and added a "Only Oscars Winners 2018
     </td>
   </tr>
 </table>
+## Last Update 
+
+Update list since since 02/03/2018 :
+* Add a winner 2018 filter
+* Update the data parser to have all the links (previous version some links between artists were missing)
+* Correct all the filter bug (deselect All, select one category, then another and deselect the first)
+* Give sens to the selection/unselection of the color checkbox (ex : if one category is uncheck, then All is automatically unchecked)
+* Correct click on node bug (when clicking on a node, sometime some neighbours of its disapear)
+* Adujst force and distance proportionnal to the label length (enough place to write the movie when passing the mouse over a node)
+* Choose dynamically the orientation of the text movie label depending on the abscissa of the nodes
 
 ## Interesting results
 
 /!\ Il n'y en a plus depuis la mise à jour ?
 We can see that some people collaborated on many movies with a single person, usually the realisators or productors. Thats leads us to think that these persons are in a way the favorites of their boss.
 
-## Annexes
 
-### Possible improvement
+## Next feature
 
-It would possible to rank people following the number of people they collaborated with and these people importance, someway like the Google's PageRank algorithm. This would highlight who are the most influent nominees.
+* It would possible to rank people following the number of people they collaborated with and these people importance, someway like the Google's PageRank algorithm. This would highlight who are the most influent nominees.
+* Add online collect with customizable request
+* Intelligent position of the name of the artist depending of the position of the nodes and the links (more readability)
 
-### Data collection
 
 
