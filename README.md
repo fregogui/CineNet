@@ -9,7 +9,7 @@ For this visualisation, we chose to represent the nominees with a nide and each 
 <table border="0">
   <tr>
     <td>
-      <img src="img/base.png" style="width: 100px;">
+      <img src="img/base.PNG" style="width: 100px;">
     </td>
   </tr>
   <tr>
@@ -53,7 +53,7 @@ By clicking on the node, the network is selected until he clicks on this node ag
       <img src="img/mouse_over1.png" style="width: 100px;">
     </td>
 <td>
-      <img src="img/mouse_click.png" style="width: 100px;">
+      <img src="img/mouse_click.PNG" style="width: 100px;">
     </td>
   </tr>
   <tr>
@@ -102,7 +102,7 @@ He is also able to select or deselect all of them with the "All" checkbox.
       <img src="img/mouse_over_checkbox.png" style="width: 100px;">
     </td>
 <td>
-      <img src="img/checkbox_selection.png" style="width: 100px;">
+      <img src="img/checkbox_selection.PNG" style="width: 100px;">
     </td>
   </tr>
   <tr>
@@ -139,7 +139,7 @@ We surrounded the winners' nodes in orange and added a "Only Oscars Winners 2018
 <table border="0">
   <tr>
     <td>
-      <img src="img/winners.png" style="width: 100px;">
+      <img src="img/winners.PNG" style="width: 100px;">
     </td>
   </tr>
   <tr>
