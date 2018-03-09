@@ -132,22 +132,27 @@ Finally, if the user is interested in somebody in particular, he can use the sea
   </tr>
 </table>
 
-## Interesting results
+### Last updates
 
-We can see that some people collaborated on many movies with a single person, usually the realisators or productors. Thats leads us to think that these persons are in a way the favorites of their boss.
+We surrounded the winners' nodes in orange and added a "Only Oscars Winners 2018" to display only these people.
 
 <table border="0">
   <tr>
     <td>
-      <img src="img/favorites.png" style="width: 100px;">
+      <img src="img/winners.png" style="width: 100px;">
     </td>
   </tr>
   <tr>
     <td align="center">
-      Someone with only one collaborator
+      Oscars winners
     </td>
   </tr>
 </table>
+
+## Interesting results
+
+/!\ Il n'y en a plus depuis la mise à jour ?
+We can see that some people collaborated on many movies with a single person, usually the realisators or productors. Thats leads us to think that these persons are in a way the favorites of their boss.
 
 ## Annexes
 
