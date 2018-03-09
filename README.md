@@ -5,7 +5,7 @@ The purpose of this project is to show the relations between the nominees of the
 
 ## General presentation
 
-For this visualisation, we chose to represent the nominees with a nide and each collaboration between since 2015 with a link. Each node's color represents the Oscare the person is nominated for.
+For this visualisation, we chose to represent the nominees with a nide and each collaboration between since 2012 with a link. Each node's color represents the Oscare the person is nominated for.
 
 <table border="0">
   <tr>
