@@ -20,6 +20,7 @@ For this visualisation, we chose to represent the nominees with a nide and each 
   </tr>
 </table>
 
+You can watch a video presenting this project and its feature or read the text below. [Video Description](https://www.youtube.com/watch?v=furStaGw6vQ&feature=youtu.be)
 The data was taken from [api.themoviedb.org](https://www.themoviedb.org/) and we have coded a node.js script to get the data we want from this API. See the [script](https://github.com/fregogui/CineNet/blob/master/collect-data/collectData.js)
 
 ## Installation
@@ -49,7 +50,7 @@ npm start
 ```
 You will see the file `database.json` in `CineNet/collect-data/data/`.
 
-*If you want more detail about the data collect and the data parsing, you can read : [DATA.md](https://github.com/fregogui/CineNet/blob/master/DATA.md)* and [PROCESSING.md](https://github.com/fregogui/CineNet/blob/master/PROCESSING.md)*
+*If you want more detail about the data collect and the data parsing, you can read : [DATA.md](https://github.com/fregogui/CineNet/blob/master/DATA.md) and [PROCESSING.md](https://github.com/fregogui/CineNet/blob/master/PROCESSING.md)*
 
 **Start the local server**
 
